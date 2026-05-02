@@ -216,3 +216,58 @@
   font-size: 0.875rem;
   color: #64748b;
 }
+
+@media (max-width: 960px) {
+  .shell {
+    padding: 16px 14px 32px;
+    background: linear-gradient(
+      180deg,
+      #0f172a 0%,
+      #1e293b 100px,
+      #f4f5f7 100px,
+      #f4f5f7 100%
+    );
+  }
+
+  .topBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .btn {
+    flex: 1;
+    justify-content: center;
+    min-width: 72px;
+  }
+
+  .stageCard {
+    border-radius: 12px;
+  }
+
+  .chrome strong {
+    white-space: normal;
+  }
+
+  .frame {
+    min-height: min(560px, 75vh);
+  }
+}
+
+@media (max-width: 480px) {
+  .hint {
+    font-size: 0.625rem;
+    padding-inline: 10px;
+  }
+}

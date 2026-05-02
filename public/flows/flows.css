@@ -558,5 +558,221 @@ body { min-width: 1200px; } /* horizontal scroll rather than squish */
 .toc a:hover { background: var(--qtm-bg-2); color: var(--qtm-blue-700); }
 
 @media (max-width: 1100px) {
-  .toc { display: none; }
+  .toc {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: auto;
+    max-width: none;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 12px;
+    border-radius: 0;
+    scroll-snap-type: x proximity;
+    border-bottom: 1px solid var(--qtm-border);
+    margin: 0 0 14px;
+    box-shadow: var(--qtm-shadow-sm);
+  }
+  .toc h6 {
+    flex-shrink: 0;
+    margin: 0 8px 0 0;
+    font-size: 9px;
+  }
+  .toc a {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 6px 10px;
+    margin: 0;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid var(--qtm-border);
+    scroll-snap-align: start;
+  }
+}
+
+/* ----- responsive: tablet / phone ----- */
+@media (max-width: 960px) {
+  html {
+    -webkit-overflow-scrolling: touch;
+  }
+  body {
+    min-width: 0 !important;
+    overflow-x: auto;
+  }
+  .canvas {
+    padding: 24px clamp(14px, 4vw, 24px) 72px;
+  }
+  .canvas-head {
+    margin-bottom: 36px;
+  }
+  .canvas-head h1 {
+    font-size: clamp(26px, 7vw, 42px);
+    letter-spacing: -1px;
+  }
+  .canvas-head p {
+    font-size: 15px;
+    line-height: 24px;
+  }
+  .canvas-head .legend {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .section-head {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .section-head .num {
+    align-self: flex-start;
+    margin-top: 0;
+  }
+  .section-head h2 {
+    font-size: clamp(22px, 5.5vw, 30px);
+  }
+  .section-head p {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .flow-section {
+    margin-bottom: 56px;
+  }
+
+  /* Stack steps vertically; arrows point down between screens */
+  .flow-row:not(.wrap) {
+    flex-wrap: wrap;
+    gap: 0;
+    justify-content: center;
+  }
+  .flow-row.wrap {
+    row-gap: 32px;
+  }
+
+  .arrow {
+    width: 100%;
+    flex-basis: 100%;
+    height: 48px;
+    margin: 0 0 8px !important;
+    align-self: center;
+    justify-content: center;
+  }
+  .arrow .line {
+    width: 2px !important;
+    height: 32px !important;
+  }
+  .arrow .line::after {
+    right: auto;
+    left: 50%;
+    top: auto !important;
+    bottom: -5px !important;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--qtm-text-3);
+    border-bottom: none;
+  }
+  .arrow.alt .line::after { border-top-color: var(--qtm-warning); }
+  .arrow.error .line::after { border-top-color: var(--qtm-danger); }
+  .arrow.dashed .line {
+    height: 32px !important;
+    background: repeating-linear-gradient(
+      180deg,
+      var(--qtm-text-3) 0 4px,
+      transparent 4px 8px
+    ) !important;
+  }
+  .arrow.dashed .line::after { border-top-color: var(--qtm-text-3); }
+  .arrow.long .line { height: 40px !important; }
+  .arrow .label {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 4px;
+  }
+
+  .step {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+  }
+
+  /* Wide diagrams scroll horizontally inside the viewport */
+  .state-canvas {
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    padding: 20px 12px !important;
+    height: auto !important;
+    min-height: 320px;
+    max-height: min(620px, 65vh);
+    -webkit-overflow-scrolling: touch;
+  }
+  .swimlane-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Wider than typical phone viewport → horizontal pan without crushing cells */
+    min-width: 880px;
+  }
+  .journey {
+    padding: 16px clamp(12px, 4vw, 24px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .journey-grid {
+    min-width: 780px;
+  }
+  .blueprint {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 0;
+  }
+  .blueprint .bp-row .bp-cells {
+    min-width: 720px;
+  }
+  .postit {
+    max-width: 100%;
+    transform: none;
+  }
+  .arch-canvas {
+    padding: clamp(20px, 5vw, 40px) clamp(14px, 4vw, 24px);
+  }
+
+  .arch-tier {
+    grid-template-columns: 1fr !important;
+  }
+
+  .web-frame {
+    width: min(380px, 100%);
+    height: auto;
+    min-height: 260px;
+    max-height: none;
+    margin-left: auto;
+    margin-right: auto;
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .canvas {
+    padding: 16px 14px 56px;
+  }
+  .toc {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    gap: 4px;
+  }
+  .toc a {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+  .canvas-head .legend .item {
+    font-size: 12px;
+  }
 }
