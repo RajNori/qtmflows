@@ -1,0 +1,338 @@
+<!-- ============================================================
+     3 · MATCH — server pings helpers, helper accepts (swimlane + screens)
+     ============================================================ -->
+<section class="flow-section" id="match" data-screen-label="04 Match & accept">
+  <header class="section-head">
+    <span class="num">03</span>
+    <div>
+      <h2>Match &amp; accept</h2>
+      <p>The 60 seconds nobody sees the same way. Client watches a spinner; helpers see a job card pop up; server is fanning out sockets. Below: the swimlane (what each actor does) and the helper-side screens (what they actually feel).</p>
+    </div>
+  </header>
+
+  <!-- ---------------- Swimlane ---------------- -->
+  <div class="subsection-head">Cross-actor swimlane</div>
+  <div class="swimlane-grid" style="grid-template-columns: 140px repeat(7, 1fr);">
+    <!-- Lane: Client -->
+    <div class="lane-label client"><span class="dot"></span>Client</div>
+    <div class="step-cell active">
+      <div class="step-num">T+0s</div>
+      <div class="step-action">Posts job · $140 held</div>
+      <div>Sees "Looking for helpers" spinner</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell active">
+      <div class="step-num">T+18s</div>
+      <div class="step-action">Push: "3 quotes in"</div>
+      <div>Reviews helper cards · ratings</div>
+    </div>
+    <div class="step-cell active">
+      <div class="step-num">T+45s</div>
+      <div class="step-action">Picks Sarah K. (4.9★)</div>
+      <div>Tap "Confirm helper"</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell active">
+      <div class="step-num">T+50s</div>
+      <div class="step-action">Sees helper assigned</div>
+      <div>"Sarah is on her way"</div>
+    </div>
+
+    <!-- Lane: System -->
+    <div class="lane-label system"><span class="dot"></span>System</div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell system">
+      <div class="step-num">T+1s</div>
+      <div class="step-action">job.status = open</div>
+      <div>geo-radius query · 12 hits</div>
+    </div>
+    <div class="step-cell system">
+      <div class="step-num">T+2s</div>
+      <div class="step-action">socket: job:available</div>
+      <div>fan out to 12 helpers</div>
+    </div>
+    <div class="step-cell system">
+      <div class="step-num">T+18s</div>
+      <div class="step-action">push: "3 quotes" → client</div>
+      <div>aggregates as quotes arrive</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell system">
+      <div class="step-num">T+45s</div>
+      <div class="step-action">job.assignedTo = sarah</div>
+      <div>cancel quotes from others</div>
+    </div>
+    <div class="step-cell system">
+      <div class="step-num">T+46s</div>
+      <div class="step-action">socket: job:assigned → both</div>
+      <div>create chat room</div>
+    </div>
+
+    <!-- Lane: Helpers (broadcast) -->
+    <div class="lane-label helper"><span class="dot"></span>Helpers (12)</div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell helper">
+      <div class="step-num">T+2s</div>
+      <div class="step-action">Push: "Job nearby — $140"</div>
+      <div>Card on Helper home</div>
+    </div>
+    <div class="step-cell helper">
+      <div class="step-num">T+8–18s</div>
+      <div class="step-action">3 of 12 send quote</div>
+      <div>9 ignore / decline silently</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell helper">
+      <div class="step-num">T+45s</div>
+      <div class="step-action">Sarah: "You got the job"</div>
+      <div>Other 2: "Job filled"</div>
+    </div>
+    <div class="step-cell empty"></div>
+  </div>
+
+  <!-- ---------------- Helper-side screens ---------------- -->
+  <div class="subsection-head" style="margin-top: 56px;">Helper screens · receiving the job <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row">
+
+    <!-- 1. Job pop / push -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 01 · INCOMING</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-bg);">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 14px; color: #fff;">
+            <div style="font-size: 11px; opacity: 0.85;">G'day,</div>
+            <div style="font-size: 14px; font-weight: 700;">Sarah</div>
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 8px;">
+              <div class="toggle-mini on" style="background: rgba(255,255,255,0.4);"></div>
+              <span style="font-size: 10px; font-weight: 600;">Online · accepting jobs</span>
+            </div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="border: 2px solid var(--qtm-success); background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 4px 16px rgba(16,185,129,0.2); position: relative;">
+              <div style="position: absolute; top: -8px; left: 12px; background: var(--qtm-success); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">⚡ NEW · 1.2km</div>
+              <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px; margin-bottom: 6px;">
+                <span class="pill-mini cleaning">🏠 Cleaning</span>
+                <span class="pill-mini warning">⚡ ASAP</span>
+              </div>
+              <div style="font-size: 11px; font-weight: 700;">3-bed end-of-lease clean</div>
+              <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 2px;">Brunswick · 2 cats · eco only</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--qtm-success); margin-top: 4px;">$140</div>
+              <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <button class="btn-mini ghost" style="font-size: 10px; padding: 6px;">View</button>
+                <button class="btn-mini helper" style="flex: 2; font-size: 10px; padding: 6px;">Send quote</button>
+              </div>
+            </div>
+            <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 8px; text-align: center;">⏱ Auto-decline in 4:32</div>
+          </div>
+          <div class="tabbar-mini">
+            <div class="tab"><div class="ico">🏠</div>Home</div>
+            <div class="tab active"><div class="ico">📋</div>Jobs</div>
+            <div class="tab"><div class="ico">💬</div>Chat</div>
+            <div class="tab"><div class="ico">💰</div>Earn</div>
+            <div class="tab"><div class="ico">👤</div>You</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Decide if this job is worth it</div>
+        <span class="verb helper">Tap "Send quote"</span>
+        <div class="note">⏱ 5 min auto-decline timer</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 2. Job detail -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 02 · DETAIL</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 14px; color: #fff;">
+            <div style="font-size: 9px; opacity: 0.7;">‹ Back</div>
+            <div style="font-size: 14px; font-weight: 700; margin-top: 8px;">Job details</div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
+              <span class="pill-mini cleaning">🏠 Cleaning</span>
+              <span class="pill-mini warning">⚡ ASAP</span>
+            </div>
+            <div style="font-size: 12px; font-weight: 700;">3-bed end-of-lease</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--qtm-success); margin: 4px 0;">$140</div>
+            <div style="font-size: 10px; color: var(--qtm-text-2); line-height: 14px;">📍 Brunswick · 1.2km from you<br/>⏰ Now (next 30 min)<br/>🏠 3 bed · 2 cats · eco only</div>
+
+            <div style="background: var(--qtm-bg); border-radius: 8px; padding: 8px; margin-top: 8px;">
+              <div style="font-size: 9px; color: var(--qtm-text-3); margin-bottom: 4px;">Posted by</div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <div class="avatar-mini lg">M</div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700;">Michael · ★ 4.8</div>
+                  <div style="font-size: 9px; color: var(--qtm-text-2);">23 jobs · regular client</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 4px; margin-top: 10px;">
+              <button class="btn-mini ghost" style="flex: 1; font-size: 10px; padding: 6px;">Decline</button>
+              <button class="btn-mini helper" style="flex: 2; font-size: 10px; padding: 6px;">Send quote · $140</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Inspect details + client reputation</div>
+        <span class="verb helper">Send quote</span>
+        <div class="note">Can negotiate price ±15%</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 3. Quote sent / waiting -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 03 · WAITING</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-bg);">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 14px; color: #fff;">
+            <div style="font-size: 14px; font-weight: 700;">Your quote is in</div>
+          </div>
+          <div style="padding: 12px;">
+            <div style="background: #fff; border-radius: 12px; padding: 14px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">⏱</div>
+              <div style="font-size: 12px; font-weight: 700;">Waiting for Michael</div>
+              <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 4px; line-height: 13px;">2 other helpers also quoted.<br/>You'll know within 2 min.</div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--qtm-border); margin-top: 10px;">
+                <span style="font-size: 10px; color: var(--qtm-text-2);">Your quote</span>
+                <span style="font-size: 12px; font-weight: 700;">$140</span>
+              </div>
+              <button class="btn-mini ghost" style="color: var(--qtm-danger); font-size: 10px; margin-top: 4px;">Withdraw quote</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">State</div>
+        <div class="title">Quote sent, awaiting client pick</div>
+        <span class="verb system">Socket: quote.submitted</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 4. Got the job -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 04 · WON</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: linear-gradient(180deg, #059669 0%, #10B981 100%); height: 100%; padding: 32px 16px; color: #fff; text-align: center;">
+          <div style="font-size: 44px; margin-bottom: 12px;">🎉</div>
+          <div style="font-size: 18px; font-weight: 800;">You got it!</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 4px; line-height: 15px;">Michael accepted your quote.<br/>Head to 42 Sydney Rd, Brunswick.</div>
+          <div style="background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px; margin-top: 20px; text-align: left;">
+            <div style="font-size: 9px; opacity: 0.7;">Your earnings</div>
+            <div style="font-size: 20px; font-weight: 800; margin-top: 2px;">$119</div>
+            <div style="font-size: 9px; opacity: 0.7;">$140 − 15% QTM fee</div>
+          </div>
+          <div style="display: flex; gap: 6px; margin-top: 16px;">
+            <button class="btn-mini dark" style="flex: 1;">💬 Chat</button>
+            <button class="btn-mini" style="flex: 2; background: #fff; color: var(--qtm-success);">Start drive</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Job assigned · drive begins</div>
+        <span class="verb helper">Start drive</span>
+        <div class="note">→ Continues in flow 04</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decline tree -->
+  <div class="subsection-head" style="margin-top: 56px;">Decision tree · what makes a helper accept</div>
+  <div style="background: #fff; border: 1px solid var(--qtm-border); border-radius: 16px; padding: 32px; box-shadow: var(--qtm-shadow-sm); position: relative;">
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 900px; margin: 0 auto;">
+
+      <!-- Q1 -->
+      <div style="display: flex; justify-content: center;">
+        <div class="tree-node decision" style="margin-top: 12px;">
+          <div class="node-title">Job pings my phone</div>
+          <div class="node-meta">Distance, pay, category match</div>
+        </div>
+      </div>
+
+      <!-- Decision row -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div>
+          <div style="text-align: center; font-size: 10px; color: var(--qtm-text-2); margin-bottom: 8px; font-weight: 600;">↓ Distance &gt; 15km</div>
+          <div class="tree-node outcome bad">
+            <div class="node-title">Auto-decline</div>
+            <div class="node-meta">Server filters before push (no notification)</div>
+          </div>
+        </div>
+        <div>
+          <div style="text-align: center; font-size: 10px; color: var(--qtm-text-2); margin-bottom: 8px; font-weight: 600;">↓ Pay too low</div>
+          <div class="tree-node outcome bad">
+            <div class="node-title">Decline · counter-offer</div>
+            <div class="node-meta">Send quote at $X higher; client decides</div>
+          </div>
+        </div>
+        <div>
+          <div style="text-align: center; font-size: 10px; color: var(--qtm-text-2); margin-bottom: 8px; font-weight: 600;">↓ Pay + distance OK</div>
+          <div class="tree-node decision" style="margin-top: 12px;">
+            <div class="node-title">Client rating ≥ 4.0?</div>
+            <div class="node-meta">Plus dispute history</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final row -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div></div>
+        <div></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="tree-node outcome good">
+            <div class="node-title">Accept ✓</div>
+            <div class="node-meta">Send quote at posted price</div>
+          </div>
+          <div class="tree-node outcome bad">
+            <div class="node-title">Skip</div>
+            <div class="node-meta">No reply · job times out for them</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge cases -->
+  <div class="subsection-head" style="margin-top: 48px;">Edge cases</div>
+  <div class="flow-row wrap" style="gap: 32px;">
+    <div class="postit">
+      <strong>⏱ No quotes after 60s</strong>
+      Client banner offers: widen radius (15km), bump price (+$20), or schedule for tomorrow. Job stays open.
+    </div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);">
+      <strong>↩ Client cancels mid-quote</strong>
+      Helpers see "Job withdrawn" toast. Quotes voided. No fee. Client gets full refund.
+    </div>
+    <div class="postit" style="background: #FECACA; color: #7F1D1D; transform: rotate(-2deg);">
+      <strong>👻 Helper accepts then ghosts</strong>
+      No location ping in 10 min · job auto-released, client re-prompted, helper rating −0.2.
+    </div>
+    <div class="postit" style="transform: rotate(-1deg);">
+      <strong>💱 Price negotiation</strong>
+      Helper quotes $160 instead of $140. Client sees both prices side-by-side; can accept cheaper or pay extra.
+    </div>
+  </div>
+
+</section>

@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QuickTaskMate — Screen Flows & UX Diagrams</title>
+<link rel="stylesheet" href="flows.css" />
+<link rel="stylesheet" href="tokens.css" /> 
+</head>
+<body>
+
+<nav class="toc">
+  <h6>Flows</h6>
+  <a href="#arch">Architecture</a>
+  <a href="#onboarding">1 · Onboarding</a>
+  <a href="#post-job">2 · Post a job</a>
+  <a href="#match">3 · Match &amp; accept</a>
+  <a href="#service">4 · Service delivery</a>
+  <a href="#chat">5 · Real-time chat</a>
+  <a href="#payments">6 · Payments &amp; escrow</a>
+  <a href="#disputes">7 · Disputes</a>
+  <a href="#admin">8 · Admin ops</a>
+  <a href="#notifications">9 · Notifications</a>
+  <a href="#state">10 · Job state machine</a>
+  <a href="#journey">11 · Journey map</a>
+  <a href="#blueprint">12 · Service blueprint</a>
+</nav>
+
+<main class="canvas" data-screen-label="00 Flows Canvas">
+
+  <!-- ============================================================
+       HERO
+       ============================================================ -->
+  <header class="canvas-head">
+    <div class="eyebrow">Screen flows · UX diagrams · v1</div>
+    <h1>How <em>QuickTaskMate</em> moves<br/>from tap to job done.</h1>
+    <p>Twelve flows across three apps — Client mobile, Helper mobile, Admin web — covering happy paths, alternates, and the moments where money, trust, and timing collide. Read top to bottom; every flow follows the same anatomy: numbered steps, mini-screens, primary action, and where it can go wrong.</p>
+    <div class="legend">
+      <div class="item"><span class="sw client"></span> Client (homeowner)</div>
+      <div class="item"><span class="sw helper"></span> Helper (provider)</div>
+      <div class="item"><span class="sw admin"></span> Admin / ops</div>
+      <div class="item"><span class="sw system"></span> System / server</div>
+      <div class="item"><span class="arrow"></span> Happy path</div>
+      <div class="item"><span class="arrow dashed"></span> Async / event</div>
+      <div class="item"><span class="sw error"></span> Unhappy path</div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       0 · ARCHITECTURE
+       ============================================================ -->
+  <section class="flow-section" id="arch" data-screen-label="01 Architecture">
+    <header class="section-head">
+      <span class="num">00</span>
+      <div>
+        <h2>System architecture</h2>
+        <p>Three clients, one realtime spine. Socket.IO carries job and chat events; REST handles everything else. Mobile reads/writes via REST; admin reads broadly, writes carefully.</p>
+      </div>
+    </header>
+
+    <div class="arch-canvas">
+      <div class="arch-tier" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div>
+          <div class="arch-tier-label">Frontend · Mobile</div>
+          <div class="arch-node client">
+            <div class="arch-name">Client app</div>
+            <div class="arch-tech">React Native · Expo · Zustand</div>
+            <div class="arch-roles">Post jobs · track helpers · chat · pay · review</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Frontend · Mobile</div>
+          <div class="arch-node helper">
+            <div class="arch-name">Helper app</div>
+            <div class="arch-tech">React Native · Expo · Zustand</div>
+            <div class="arch-roles">Receive jobs · accept · navigate · update status · earn</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Frontend · Web</div>
+          <div class="arch-node admin">
+            <div class="arch-name">Admin dashboard</div>
+            <div class="arch-tech">React · TS · Tailwind · React Query</div>
+            <div class="arch-roles">Verify · resolve disputes · manage users &amp; jobs · monitor</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-tier" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <div class="arch-tier-label">Realtime spine</div>
+          <div class="arch-node realtime">
+            <div class="arch-name">Socket.IO gateway</div>
+            <div class="arch-tech">notification:new · job:available · job:status · chat:message · location:update</div>
+            <div class="arch-roles">Pushes events to client/helper rooms keyed by user id and job id</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">API surface</div>
+          <div class="arch-node">
+            <div class="arch-name">REST · /api/v1</div>
+            <div class="arch-tech">Node · Express · JWT · Stripe Connect</div>
+            <div class="arch-roles">Auth · jobs · users · payments · chat history · uploads</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-tier" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+        <div>
+          <div class="arch-tier-label">Data</div>
+          <div class="arch-node">
+            <div class="arch-name">MongoDB</div>
+            <div class="arch-tech">jobs · users · messages · disputes</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Money</div>
+          <div class="arch-node">
+            <div class="arch-name">Stripe Connect</div>
+            <div class="arch-tech">escrow · payouts · 15% fee</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Notifications</div>
+          <div class="arch-node">
+            <div class="arch-name">Push · SMS · Email</div>
+            <div class="arch-tech">Expo Push · Twilio · SendGrid</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Trust</div>
+          <div class="arch-node">
+            <div class="arch-name">Verification</div>
+            <div class="arch-tech">ID · police check · Stripe Identity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- placeholder anchors for sections that are loaded from sub-files -->
+  <div id="injected-flows"></div>
+
+</main>
+
+<!-- Inject flow sub-files at runtime to keep this index manageable.
+     Each sub-file is a fragment of HTML appended to #injected-flows. -->
+<script>
+(async () => {
+  const files = [
+    'flow-01-onboarding.html',
+    'flow-02-post-job.html',
+    'flow-03-match.html',
+    'flow-04-service.html',
+    'flow-05-chat.html',
+    'flow-06-payments.html',
+    'flow-07-disputes.html',
+    'flow-08-admin.html',
+    'flow-09-notifications.html',
+    'flow-10-state.html',
+    'flow-11-journey.html',
+    'flow-12-blueprint.html',
+  ];
+  const target = document.getElementById('injected-flows');
+  /* Full document URL is required: file:// and some browsers use origin "null". */
+  const flowsBase = new URL('.', window.location.href);
+  let loaded = 0;
+  const failed = [];
+  for (const file of files) {
+    const url = new URL(file, flowsBase).href;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        failed.push(`${file} (${res.status})`);
+        continue;
+      }
+      const html = await res.text();
+      const wrap = document.createElement('div');
+      wrap.innerHTML = html;
+      while (wrap.firstChild) target.appendChild(wrap.firstChild);
+      loaded += 1;
+    } catch (e) {
+      failed.push(file);
+      console.warn('flows: failed to load', file, e);
+    }
+  }
+  if (loaded === 0 && failed.length) {
+    const localHint =
+      window.location.protocol === 'file:'
+        ? '<p style="margin:12px 0 0;line-height:1.5"><strong>Local HTML:</strong> Browsers usually block <code>fetch()</code> for neighbouring files opened as <code>file://…</code>. Open <strong>index.offline.html</strong> (run <code>node bundle.mjs</code> once to regenerate it), <em>or</em> serve this folder:<br/><code style="display:inline-block;margin-top:8px">cd&nbsp;flows &amp;&amp; python3&nbsp;-m&nbsp;http.server&nbsp;8766</code> then visit <strong>http://127.0.0.1:8766/</strong>.</p>'
+        : '<p style="margin:12px 0 0;line-height:1.5"><strong>Hosted:</strong> Upload every <code>flow-*.html</code> next to <code>index.html</code> and confirm the CDN returns HTML (not 403) for those URLs.</p>';
+    target.innerHTML =
+      '<section class="flow-section"><div style="padding:24px;background:#fee2e2;border-radius:12px;color:#991b1b;font:14px system-ui;max-width:720px">Could not load flow HTML fragments.' +
+      localHint +
+      '</div></section>';
+    console.warn('flows: fragments failed:', failed.join(', '));
+  }
+})();
+</script>
+
+</body>
+</html>

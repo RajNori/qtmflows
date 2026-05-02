@@ -1,0 +1,133 @@
+<!-- ============================================================
+     5 · CHAT (real-time messaging, both sides)
+     ============================================================ -->
+<section class="flow-section" id="chat" data-screen-label="06 Chat">
+  <header class="section-head">
+    <span class="num">05</span>
+    <div>
+      <h2>In-app chat</h2>
+      <p>One chat per job, scoped to that job's lifetime + 7 days. Socket.IO room per job. Off-platform contact info is stripped server-side.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Conversation · both sides <span class="actor-tag client">Client</span> <span class="actor-tag helper">Helper</span></div>
+
+  <div class="flow-row">
+    <!-- Client side -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>CLIENT · CONVERSATION</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:48</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: #fff; padding: 28px 12px 8px; border-bottom: 1px solid var(--qtm-border); display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 14px; color: var(--qtm-text-2);">‹</div>
+            <div class="avatar-mini helper">SK</div>
+            <div style="flex: 1;">
+              <div style="font-size: 12px; font-weight: 700;">Sarah K.</div>
+              <div style="font-size: 9px; color: var(--qtm-success);">● online · ETA 5 min</div>
+            </div>
+            <div style="font-size: 13px;">📞</div>
+          </div>
+          <div class="chat-stack-mini" style="padding: 10px 10px 50px;">
+            <div style="font-size: 8px; color: var(--qtm-text-3); text-align: center; margin: 4px 0;">Today · 9:46</div>
+            <div class="msg-mini in">Hey Michael, I'm 5 min out. Any parking tips?</div>
+            <div class="msg-mini out">Hi! Spot in front of the gate is free</div>
+            <div class="msg-mini out">Side gate is unlocked, just come round</div>
+            <div class="msg-mini in">Perfect, thanks 👍</div>
+            <div style="background: var(--qtm-warning-soft); border: 1px dashed var(--qtm-warning); border-radius: 8px; padding: 6px 8px; font-size: 9px; color: #92400E; margin: 4px 0;">⚠ Phone numbers can't be shared in chat</div>
+            <div class="msg-mini in" style="opacity: 0.5;">Want my mobile? It's [REDACTED]</div>
+          </div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--qtm-border); padding: 6px 10px; display: flex; gap: 6px; align-items: center;">
+            <div style="font-size: 14px;">+</div>
+            <input class="input-mini focused" style="flex: 1; padding: 5px 8px; font-size: 10px;" placeholder="Message..."/>
+            <div style="font-size: 14px;">😊</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Coordinate without exposing phone</div>
+        <span class="verb primary">Type · send</span>
+        <div class="note">PII stripped server-side</div>
+      </div>
+    </div>
+
+    <div class="arrow dashed"><div class="line"></div><div class="label">Socket: chat:message</div></div>
+
+    <!-- Helper side -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>HELPER · MIRROR</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:48</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: #fff; padding: 28px 12px 8px; border-bottom: 1px solid var(--qtm-border); display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 14px; color: var(--qtm-text-2);">‹</div>
+            <div class="avatar-mini">M</div>
+            <div style="flex: 1;">
+              <div style="font-size: 12px; font-weight: 700;">Michael</div>
+              <div style="font-size: 9px; color: var(--qtm-success);">● typing...</div>
+            </div>
+            <div style="font-size: 13px;">📞</div>
+          </div>
+          <div class="chat-stack-mini" style="padding: 10px 10px 50px;">
+            <div style="font-size: 8px; color: var(--qtm-text-3); text-align: center; margin: 4px 0;">Today · 9:46</div>
+            <div class="msg-mini out" style="background: linear-gradient(135deg, #10B981, #059669);">Hey Michael, I'm 5 min out. Any parking tips?</div>
+            <div class="msg-mini in">Hi! Spot in front of the gate is free</div>
+            <div class="msg-mini in">Side gate is unlocked, just come round</div>
+            <div class="msg-mini out" style="background: linear-gradient(135deg, #10B981, #059669);">Perfect, thanks 👍</div>
+            <div class="msg-mini in" style="font-size: 9px; opacity: 0.7; padding: 4px 8px;"><em>Michael tried to send a number</em></div>
+          </div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--qtm-border); padding: 6px 10px; display: flex; gap: 6px;">
+            <input class="input-mini" style="flex: 1; padding: 5px 8px; font-size: 10px;" placeholder="Message..."/>
+            <div style="font-size: 13px;">📎</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Mirror</div>
+        <div class="title">Sees same convo · typing indicator</div>
+        <span class="verb system">Realtime · 200ms latency</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div><div class="label">Quick actions</div></div>
+
+    <!-- Quick actions / SOS -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>QUICK ACTIONS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:50</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: rgba(0,0,0,0.4); height: 50%;"></div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 16px 16px 0 0; padding: 14px;">
+            <div style="width: 32px; height: 3px; background: var(--qtm-border); border-radius: 999px; margin: 0 auto 12px;"></div>
+            <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">Quick actions</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">📷 Photo</button>
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">📍 Location</button>
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">⏱ "On my way"</button>
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">⌛ Running late</button>
+            </div>
+            <button class="btn-mini danger" style="margin-top: 10px; font-size: 11px;">🚨 Emergency · alert admin</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Action</div>
+        <div class="title">Canned messages · SOS</div>
+        <span class="verb danger">Panic → admin</span>
+        <div class="note">Within 60s response</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 48px;">Edge cases</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>📵 Off-platform contact</strong>Server regex strips phone numbers, emails, social handles. Sender sees their own message; receiver sees [REDACTED] + warning.</div>
+    <div class="postit" style="background:#FED7AA; color:#7C2D12; transform:rotate(1deg);"><strong>🔇 Muted thread</strong>After job + 7 days, chat archives. Read-only. Dispute reopens it.</div>
+    <div class="postit" style="background:#FECACA; color:#7F1D1D; transform:rotate(-1deg);"><strong>🚩 Reported message</strong>Long-press → Report. Sent to admin queue with full thread context.</div>
+  </div>
+</section>

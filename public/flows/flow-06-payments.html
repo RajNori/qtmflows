@@ -1,0 +1,172 @@
+<!-- ============================================================
+     6 · PAYMENTS / ESCROW / PAYOUT
+     ============================================================ -->
+<section class="flow-section" id="payments" data-screen-label="07 Payments">
+  <header class="section-head">
+    <span class="num">06</span>
+    <div>
+      <h2>Payments &amp; escrow</h2>
+      <p>Money moves four times: hold (post), capture (approve), platform fee split (15%), payout (helper bank). Stripe Connect Custom under the hood.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Money timeline · service blueprint slice</div>
+  <div class="blueprint" style="--bp-steps: 5;">
+    <div class="bp-row">
+      <div class="bp-label">Client sees</div>
+      <div class="bp-cells">
+        <div><strong>Post job</strong><br/>"$140 hold on card"</div>
+        <div>—</div>
+        <div>—</div>
+        <div><strong>Approve work</strong><br/>"Charged $140"</div>
+        <div><em>Receipt emailed</em></div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">Helper sees</div>
+      <div class="bp-cells">
+        <div>—</div>
+        <div>—</div>
+        <div><strong>Mark complete</strong><br/>"$119 pending"</div>
+        <div>"$119 ready · in 1–3 days"</div>
+        <div><strong>Payout</strong><br/>"$119 deposited"</div>
+      </div>
+    </div>
+    <div class="bp-row bp-line">— — — — — — — line of visibility — — — — — —</div>
+    <div class="bp-row">
+      <div class="bp-label">Stripe</div>
+      <div class="bp-cells">
+        <div><code>PaymentIntent.created · capture_method=manual</code></div>
+        <div>Auth held 7 days max</div>
+        <div>—</div>
+        <div><code>PI.capture()</code> · split: $21 platform / $119 helper</div>
+        <div><code>Transfer → connected acct · Payout schedule</code></div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">QTM Server</div>
+      <div class="bp-cells">
+        <div>job.escrow = held</div>
+        <div>—</div>
+        <div>job.status = completed</div>
+        <div>job.escrow = released</div>
+        <div>helper.lifetime_earnings += 119</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Helper earnings + payout screens -->
+  <div class="subsection-head" style="margin-top: 56px;">Helper earnings &amp; payout <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row">
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>EARN · DASHBOARD</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 18px; color: #fff;">
+            <div style="font-size: 9px; opacity: 0.8;">This week</div>
+            <div style="font-size: 28px; font-weight: 800; margin-top: 2px;">$847.00</div>
+            <div style="display: flex; gap: 12px; font-size: 9px; margin-top: 8px;">
+              <span>📊 7 jobs</span><span>★ 4.92</span><span>↑ 18%</span>
+            </div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="background: var(--qtm-bg); border-radius: 10px; padding: 10px;">
+              <div style="display: flex; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 9px; color: var(--qtm-text-3);">Available</div>
+                  <div style="font-size: 14px; font-weight: 700; color: var(--qtm-success);">$522.00</div>
+                </div>
+                <button class="btn-mini helper" style="width: auto; padding: 6px 14px; font-size: 10px;">Cash out</button>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--qtm-border); font-size: 10px;">
+                <span style="color: var(--qtm-text-2);">Pending</span><span style="color: var(--qtm-warning);">$325.00</span>
+              </div>
+            </div>
+            <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 12px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Recent</div>
+            <div class="card-mini">
+              <div class="row"><span style="font-size: 10px; font-weight: 600;">Cleaning · Brunswick</span><span class="price" style="color: var(--qtm-success);">+$119</span></div>
+              <div class="meta">Today 11:30 · ✓ Released</div>
+            </div>
+            <div class="card-mini">
+              <div class="row"><span style="font-size: 10px; font-weight: 600;">Outdoor · Coburg</span><span class="price" style="color: var(--qtm-warning);">$85 pending</span></div>
+              <div class="meta">Yesterday · ⏱ Holds 1h 14m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">See what's earned vs available</div>
+        <span class="verb helper">Cash out</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>CASH OUT</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:42</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 13px; font-weight: 700;">Cash out</div>
+          <div style="font-size: 9px; color: var(--qtm-text-2); margin-bottom: 12px;">Funds in your bank in 1–3 business days</div>
+          <label class="field-label-mini">Amount</label>
+          <div style="border: 1.5px solid var(--qtm-blue-600); border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 4px;">
+            <div style="font-size: 22px; font-weight: 800;">$522.00</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2);">All available</div>
+          </div>
+          <button class="btn-mini ghost" style="font-size: 10px;">Custom amount</button>
+
+          <label class="field-label-mini" style="margin-top: 12px;">To</label>
+          <div style="border: 1.5px solid var(--qtm-border); border-radius: 8px; padding: 8px 10px;">
+            <div style="font-size: 10px; font-weight: 700;">CommBank •••3392</div>
+            <div style="font-size: 9px; color: var(--qtm-text-3);">Default · verified</div>
+          </div>
+          <button class="btn-mini helper" style="margin-top: 12px;">Cash out · $522.00</button>
+          <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 8px; text-align: center;">No fee · standard payout</div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Move money to bank</div>
+        <span class="verb helper">Confirm cash out</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>PAID</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:42</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: linear-gradient(180deg, #059669, #10B981); height: 100%; padding: 32px 14px; color: #fff; text-align: center;">
+          <div style="font-size: 44px;">💸</div>
+          <div style="font-size: 18px; font-weight: 800; margin-top: 8px;">On its way</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 6px; line-height: 15px;">$522 to CommBank •••3392.<br/>Arrives by Mon, May 6.</div>
+          <div style="background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 12px; padding: 10px; margin-top: 18px; font-size: 9px; text-align: left;">
+            <div style="opacity: 0.7;">Reference</div>
+            <div style="font-family: var(--qtm-font-mono); font-size: 10px; margin-top: 2px;">QTM-PO-2937401</div>
+          </div>
+          <button class="btn-mini" style="margin-top: 14px; background: #fff; color: var(--qtm-success);">Done</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Payout queued</div>
+        <span class="verb system">Stripe Transfer + Payout</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 48px;">Edge cases</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>💳 Auth expires (7 days)</strong>Stripe drops the hold. Job auto-cancels with apology email; client can repost.</div>
+    <div class="postit" style="background:#FED7AA;color:#7C2D12;transform:rotate(1deg);"><strong>↩ Refund mid-service</strong>Prorated by elapsed time. Helper paid for time worked; client refunded the rest.</div>
+    <div class="postit" style="background:#FECACA;color:#7F1D1D;transform:rotate(-1deg);"><strong>🚫 Bank verification fails</strong>Cash-out blocked until KYC re-verified. Funds stay in QTM ledger.</div>
+    <div class="postit" style="transform:rotate(-2deg);"><strong>⏱ Auto-release</strong>If client doesn't approve in 2h, escrow auto-releases. Email warning at 1h 30m.</div>
+  </div>
+</section>

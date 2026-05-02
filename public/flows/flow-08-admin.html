@@ -1,0 +1,147 @@
+<!-- ============================================================
+     8 · ADMIN OPS (verification, dispute resolution, mgmt)
+     ============================================================ -->
+<section class="flow-section" id="admin" data-screen-label="09 Admin ops">
+  <header class="section-head">
+    <span class="num">08</span>
+    <div>
+      <h2>Admin operations</h2>
+      <p>Three core jobs in the back office: review pending helpers, resolve disputes, manage users &amp; jobs. Atlassian-style flat utility — dense tables, fast keyboard nav, no decoration.</p>
+    </div>
+  </header>
+
+  <!-- Verification queue -->
+  <div class="subsection-head"><span class="actor-tag admin">Admin</span> Helper verification queue</div>
+  <div class="flow-row" style="margin-bottom: 56px;">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 01 · QUEUE</div>
+      <div class="web-frame">
+        <div class="topbar"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>QTM Admin · Verification</div>
+        <div class="sidebar">
+          <div class="nav-item">📊 Dash</div>
+          <div class="nav-item active">✓ Verify</div>
+          <div class="nav-item">⚖ Disputes</div>
+          <div class="nav-item">👥 Users</div>
+          <div class="nav-item">📋 Jobs</div>
+        </div>
+        <div class="main">
+          <div class="page-title">Pending helpers · 23</div>
+          <table class="tbl-mini">
+            <thead><tr><th>Name</th><th>Submitted</th><th>ID</th><th>AFP</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Sarah Kowalski</strong><div class="mono" style="font-size: 7px;">u_2937</div></td><td>2h ago</td><td><span class="badge-mini ok">✓</span></td><td><span class="badge-mini ok">Clear</span></td><td><span class="badge-mini warn">Review</span></td></tr>
+              <tr><td><strong>James Tully</strong><div class="mono" style="font-size: 7px;">u_2938</div></td><td>3h ago</td><td><span class="badge-mini ok">✓</span></td><td><span class="badge-mini warn">Wait</span></td><td><span class="badge-mini warn">Review</span></td></tr>
+              <tr><td><strong>M. Reza</strong><div class="mono" style="font-size: 7px;">u_2941</div></td><td>5h ago</td><td><span class="badge-mini no">Blur</span></td><td>—</td><td><span class="badge-mini no">Block</span></td></tr>
+              <tr><td><strong>Aisha Patel</strong><div class="mono" style="font-size: 7px;">u_2942</div></td><td>6h ago</td><td><span class="badge-mini ok">✓</span></td><td><span class="badge-mini ok">Clear</span></td><td><span class="badge-mini info">Auto</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="annot" style="width: 380px;">
+        <div class="goal">Goal</div>
+        <div class="title">Triage pending helpers · spot blocks</div>
+        <span class="verb">Click row · open detail</span>
+        <div class="note">SLA: 24h to first-touch each row</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 02 · DETAIL</div>
+      <div class="web-frame">
+        <div class="topbar"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>Sarah Kowalski · u_2937</div>
+        <div class="sidebar">
+          <div class="nav-item">📊 Dash</div>
+          <div class="nav-item active">✓ Verify</div>
+          <div class="nav-item">⚖ Disputes</div>
+          <div class="nav-item">👥 Users</div>
+          <div class="nav-item">📋 Jobs</div>
+        </div>
+        <div class="main" style="overflow-y: auto;">
+          <div class="page-title">Sarah Kowalski</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 9px; margin-bottom: 8px;">
+            <div><div style="color: var(--admin-text-3); font-size: 8px;">DOB</div><div>14 Mar 1991</div></div>
+            <div><div style="color: var(--admin-text-3); font-size: 8px;">Suburb</div><div>Brunswick + 10km</div></div>
+          </div>
+          <div style="font-size: 9px; color: var(--admin-text-3); margin-bottom: 4px; font-weight: 600;">CHECKS</div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="display:flex; justify-content: space-between; padding: 4px 6px; background: var(--admin-success-soft); border-radius: 3px; font-size: 9px;"><span>📷 Photo ID (Stripe)</span><span class="badge-mini ok">PASS</span></div>
+            <div style="display:flex; justify-content: space-between; padding: 4px 6px; background: var(--admin-success-soft); border-radius: 3px; font-size: 9px;"><span>👮 AFP police check</span><span class="badge-mini ok">CLEAR</span></div>
+            <div style="display:flex; justify-content: space-between; padding: 4px 6px; background: var(--admin-warning-soft); border-radius: 3px; font-size: 9px;"><span>🏠 Address proof</span><span class="badge-mini warn">Outdated</span></div>
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 10px;">
+            <button style="flex: 1; padding: 6px; font-size: 10px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Request more</button>
+            <button style="flex: 1; padding: 6px; font-size: 10px; border: none; background: var(--admin-danger); color: #fff; border-radius: 4px;">Reject</button>
+            <button style="flex: 2; padding: 6px; font-size: 10px; border: none; background: var(--admin-success); color: #fff; border-radius: 4px; font-weight: 600;">Approve</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot" style="width: 380px;">
+        <div class="goal">Goal</div>
+        <div class="title">Decide approve / reject / request</div>
+        <span class="verb system">3 keyboard shortcuts: A · R · M</span>
+        <div class="note">Decision triggers SMS + push to helper</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dispute resolution -->
+  <div class="subsection-head"><span class="actor-tag admin">Admin</span> Dispute case detail</div>
+  <div class="flow-row">
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>DISPUTE · CASE</div>
+      <div class="web-frame" style="width: 480px; height: 320px;">
+        <div class="topbar"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>QTM-DSP-2904 · Cleaning · Brunswick</div>
+        <div class="sidebar">
+          <div class="nav-item">📊 Dash</div>
+          <div class="nav-item">✓ Verify</div>
+          <div class="nav-item active">⚖ Disputes</div>
+          <div class="nav-item">👥 Users</div>
+          <div class="nav-item">📋 Jobs</div>
+        </div>
+        <div class="main" style="overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="page-title" style="margin: 0;">Quality dispute</div>
+            <span class="badge-mini warn">⚠ Open · 4h</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 9px; margin-bottom: 8px;">
+            <div style="background: var(--admin-primary-soft); padding: 6px; border-radius: 4px;"><div style="font-weight: 600;">Client · Michael</div><div>"Bath 2 was skipped"</div></div>
+            <div style="background: var(--admin-success-soft); padding: 6px; border-radius: 4px;"><div style="font-weight: 600;">Helper · Sarah</div><div>"Bath 2 not in checklist?"</div></div>
+          </div>
+          <div style="font-size: 8px; color: var(--admin-text-3); margin-bottom: 3px; font-weight: 600;">EVIDENCE</div>
+          <div style="display: flex; gap: 3px; margin-bottom: 8px;">
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #FED7AA, #FB923C); border-radius: 3px;"></div>
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #FECACA, #F87171); border-radius: 3px;"></div>
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #DBEAFE, #93C5FD); border-radius: 3px;"></div>
+            <div style="width: 32px; height: 32px; background: var(--admin-bg); border: 1px dashed var(--admin-border); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 9px;">+5</div>
+            <div style="width: 32px; height: 32px; background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 3px; font-size: 8px; display: flex; align-items: center; justify-content: center;">📍GPS</div>
+            <div style="width: 32px; height: 32px; background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 3px; font-size: 8px; display: flex; align-items: center; justify-content: center;">💬14</div>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Refund full</button>
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Refund $30</button>
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: none; background: var(--admin-primary); color: #fff; border-radius: 4px; font-weight: 600;">Schedule re-do</button>
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Deny</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot" style="width: 480px;">
+        <div class="goal">Goal</div>
+        <div class="title">Decide refund · re-do · deny</div>
+        <span class="verb system">One-click resolution</span>
+        <div class="note">Decision triggers escrow action + notifies both parties</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User mgmt + monitoring -->
+  <div class="subsection-head" style="margin-top: 48px;">User &amp; job management · monitoring</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>👥 User mgmt</strong>Search by phone / name / id. Suspend, unsuspend, refund any past job, force-verify, merge accounts.</div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);"><strong>📋 Job ops</strong>Re-assign stuck jobs. Force-cancel zombies. Re-issue refund. View full state log.</div>
+    <div class="postit" style="background: #BFDBFE; color: #1E3A8A; transform: rotate(-1deg);"><strong>📊 Live monitor</strong>Real-time map: pending jobs, helpers online, disputes opened today, GMV running total.</div>
+    <div class="postit" style="transform: rotate(-2deg);"><strong>🚨 Safety queue</strong>Panic SOS routes here first. On-call admin + Slack alert + helper hotline within 60s.</div>
+  </div>
+</section>

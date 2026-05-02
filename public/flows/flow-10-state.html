@@ -1,0 +1,84 @@
+<!-- ============================================================
+     10 · JOB STATE MACHINE
+     ============================================================ -->
+<section class="flow-section" id="state" data-screen-label="11 State machine">
+  <header class="section-head">
+    <span class="num">10</span>
+    <div>
+      <h2>Job state machine</h2>
+      <p>Eleven states. Edges are events (user action or system tick). Terminal states in green; error/exit states in red/orange.</p>
+    </div>
+  </header>
+
+  <div class="state-canvas" style="height: 720px;">
+    <svg viewBox="0 0 1280 720" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+        </marker>
+        <marker id="ar-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#EF4444"/>
+        </marker>
+        <marker id="ar-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#10B981"/>
+        </marker>
+      </defs>
+      <!-- Happy path -->
+      <path d="M 130 110 L 250 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 360 110 L 480 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 590 110 L 710 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 820 110 L 940 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 1050 110 L 1170 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <!-- second row -->
+      <path d="M 1220 150 Q 1240 280 1170 290 L 1050 290" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 940 290 L 820 290" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 710 290 L 590 290" stroke="#10B981" stroke-width="2" fill="none" marker-end="url(#ar-g)"/>
+      <!-- Branches off / error edges -->
+      <path d="M 480 150 L 480 280 L 360 280" stroke="#EF4444" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 590 150 L 590 250 L 250 250 L 250 160" stroke="#EF4444" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 820 150 L 820 240 L 480 240 L 480 170" stroke="#F97316" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 1050 150 L 1050 220 L 880 220 L 820 290" stroke="#F97316" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <!-- Dispute branch -->
+      <path d="M 480 330 L 480 440" stroke="#F97316" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 590 470 L 710 470" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 820 510 L 820 580 L 700 580" stroke="#10B981" stroke-width="2" fill="none" marker-end="url(#ar-g)"/>
+      <path d="M 820 510 L 820 580 L 940 580" stroke="#EF4444" stroke-width="2" fill="none" marker-end="url(#ar-r)"/>
+
+      <!-- edge labels -->
+      <text x="190" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">post()</text>
+      <text x="410" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">match</text>
+      <text x="640" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">accept</text>
+      <text x="870" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">arrive</text>
+      <text x="1080" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">start</text>
+      <text x="990" y="280" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">complete</text>
+      <text x="640" y="280" font-size="10" fill="#10B981" font-family="ui-monospace, monospace">approve()</text>
+      <text x="490" y="200" font-size="10" fill="#EF4444" font-family="ui-monospace, monospace">cancel · timeout</text>
+      <text x="495" y="450" font-size="10" fill="#F97316" font-family="ui-monospace, monospace">dispute()</text>
+      <text x="630" y="460" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">admin review</text>
+    </svg>
+
+    <!-- Nodes -->
+    <div class="state-node start"        style="left: 20px;   top: 90px;"><span class="label">draft</span><span class="name">Draft</span></div>
+    <div class="state-node active"       style="left: 250px;  top: 90px;"><span class="label">open</span><span class="name">Open</span></div>
+    <div class="state-node active"       style="left: 480px;  top: 90px;"><span class="label">matching</span><span class="name">Matching</span></div>
+    <div class="state-node active"       style="left: 710px;  top: 90px;"><span class="label">assigned</span><span class="name">Assigned</span></div>
+    <div class="state-node in-progress"  style="left: 940px;  top: 90px;"><span class="label">en_route</span><span class="name">En route</span></div>
+    <div class="state-node in-progress"  style="left: 1170px; top: 90px;"><span class="label">arrived</span><span class="name">Arrived</span></div>
+    <div class="state-node in-progress"  style="left: 940px;  top: 270px;"><span class="label">in_progress</span><span class="name">In progress</span></div>
+    <div class="state-node terminal"     style="left: 710px;  top: 270px;"><span class="label">completed</span><span class="name">Completed</span></div>
+    <div class="state-node terminal"     style="left: 480px;  top: 270px;"><span class="label">approved · paid</span><span class="name">Approved ✓</span></div>
+    <div class="state-node error"        style="left: 250px;  top: 270px;"><span class="label">cancelled</span><span class="name">Cancelled</span></div>
+    <div class="state-node dispute"      style="left: 480px;  top: 440px;"><span class="label">disputed</span><span class="name">Disputed</span></div>
+    <div class="state-node dispute"      style="left: 710px;  top: 440px;"><span class="label">admin_review</span><span class="name">Admin review</span></div>
+    <div class="state-node terminal"     style="left: 530px;  top: 580px;"><span class="label">resolved · paid</span><span class="name">Resolved ✓</span></div>
+    <div class="state-node error"        style="left: 940px;  top: 580px;"><span class="label">refunded</span><span class="name">Refunded</span></div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 32px;">Auto-transitions (system ticks)</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>⏱ open → cancelled</strong>No quotes after 60 min · Stripe auth would expire</div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);"><strong>⏱ assigned → cancelled</strong>Helper not within 1km of address by ETA + 15 min</div>
+    <div class="postit" style="background: #BFDBFE; color: #1E3A8A; transform: rotate(-1deg);"><strong>⏱ completed → approved</strong>Auto-release escrow after 2h of no client action</div>
+    <div class="postit" style="transform: rotate(-2deg);"><strong>⏱ disputed → admin_review</strong>Both parties had 24h to settle directly first</div>
+  </div>
+</section>

@@ -1,0 +1,2366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QuickTaskMate — Screen Flows & UX Diagrams</title>
+<link rel="stylesheet" href="flows.css" />
+<link rel="stylesheet" href="tokens.css" /> 
+</head>
+<body>
+
+<nav class="toc">
+  <h6>Flows</h6>
+  <a href="#arch">Architecture</a>
+  <a href="#onboarding">1 · Onboarding</a>
+  <a href="#post-job">2 · Post a job</a>
+  <a href="#match">3 · Match &amp; accept</a>
+  <a href="#service">4 · Service delivery</a>
+  <a href="#chat">5 · Real-time chat</a>
+  <a href="#payments">6 · Payments &amp; escrow</a>
+  <a href="#disputes">7 · Disputes</a>
+  <a href="#admin">8 · Admin ops</a>
+  <a href="#notifications">9 · Notifications</a>
+  <a href="#state">10 · Job state machine</a>
+  <a href="#journey">11 · Journey map</a>
+  <a href="#blueprint">12 · Service blueprint</a>
+</nav>
+
+<main class="canvas" data-screen-label="00 Flows Canvas">
+
+  <!-- ============================================================
+       HERO
+       ============================================================ -->
+  <header class="canvas-head">
+    <div class="eyebrow">Screen flows · UX diagrams · v1</div>
+    <h1>How <em>QuickTaskMate</em> moves<br/>from tap to job done.</h1>
+    <p>Twelve flows across three apps — Client mobile, Helper mobile, Admin web — covering happy paths, alternates, and the moments where money, trust, and timing collide. Read top to bottom; every flow follows the same anatomy: numbered steps, mini-screens, primary action, and where it can go wrong.</p>
+    <div class="legend">
+      <div class="item"><span class="sw client"></span> Client (homeowner)</div>
+      <div class="item"><span class="sw helper"></span> Helper (provider)</div>
+      <div class="item"><span class="sw admin"></span> Admin / ops</div>
+      <div class="item"><span class="sw system"></span> System / server</div>
+      <div class="item"><span class="arrow"></span> Happy path</div>
+      <div class="item"><span class="arrow dashed"></span> Async / event</div>
+      <div class="item"><span class="sw error"></span> Unhappy path</div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       0 · ARCHITECTURE
+       ============================================================ -->
+  <section class="flow-section" id="arch" data-screen-label="01 Architecture">
+    <header class="section-head">
+      <span class="num">00</span>
+      <div>
+        <h2>System architecture</h2>
+        <p>Three clients, one realtime spine. Socket.IO carries job and chat events; REST handles everything else. Mobile reads/writes via REST; admin reads broadly, writes carefully.</p>
+      </div>
+    </header>
+
+    <div class="arch-canvas">
+      <div class="arch-tier" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div>
+          <div class="arch-tier-label">Frontend · Mobile</div>
+          <div class="arch-node client">
+            <div class="arch-name">Client app</div>
+            <div class="arch-tech">React Native · Expo · Zustand</div>
+            <div class="arch-roles">Post jobs · track helpers · chat · pay · review</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Frontend · Mobile</div>
+          <div class="arch-node helper">
+            <div class="arch-name">Helper app</div>
+            <div class="arch-tech">React Native · Expo · Zustand</div>
+            <div class="arch-roles">Receive jobs · accept · navigate · update status · earn</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Frontend · Web</div>
+          <div class="arch-node admin">
+            <div class="arch-name">Admin dashboard</div>
+            <div class="arch-tech">React · TS · Tailwind · React Query</div>
+            <div class="arch-roles">Verify · resolve disputes · manage users &amp; jobs · monitor</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-tier" style="grid-template-columns: 1fr 1fr;">
+        <div>
+          <div class="arch-tier-label">Realtime spine</div>
+          <div class="arch-node realtime">
+            <div class="arch-name">Socket.IO gateway</div>
+            <div class="arch-tech">notification:new · job:available · job:status · chat:message · location:update</div>
+            <div class="arch-roles">Pushes events to client/helper rooms keyed by user id and job id</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">API surface</div>
+          <div class="arch-node">
+            <div class="arch-name">REST · /api/v1</div>
+            <div class="arch-tech">Node · Express · JWT · Stripe Connect</div>
+            <div class="arch-roles">Auth · jobs · users · payments · chat history · uploads</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-tier" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+        <div>
+          <div class="arch-tier-label">Data</div>
+          <div class="arch-node">
+            <div class="arch-name">MongoDB</div>
+            <div class="arch-tech">jobs · users · messages · disputes</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Money</div>
+          <div class="arch-node">
+            <div class="arch-name">Stripe Connect</div>
+            <div class="arch-tech">escrow · payouts · 15% fee</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Notifications</div>
+          <div class="arch-node">
+            <div class="arch-name">Push · SMS · Email</div>
+            <div class="arch-tech">Expo Push · Twilio · SendGrid</div>
+          </div>
+        </div>
+        <div>
+          <div class="arch-tier-label">Trust</div>
+          <div class="arch-node">
+            <div class="arch-name">Verification</div>
+            <div class="arch-tech">ID · police check · Stripe Identity</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- placeholder anchors for sections that are loaded from sub-files -->
+  <div id="injected-flows">
+<!-- ============================================================
+     1 · ONBOARDING (Client + Helper, side-by-side)
+     ============================================================ -->
+<section class="flow-section" id="onboarding" data-screen-label="02 Onboarding">
+  <header class="section-head">
+    <span class="num">01</span>
+    <div>
+      <h2>Onboarding</h2>
+      <p>Same first three screens for both roles — phone, OTP, role pick. After that, the paths fork: Clients fill a one-screen profile and they're in. Helpers run a 14-step verification gauntlet before they can accept a single job.</p>
+    </div>
+  </header>
+
+  <!-- Shared start -->
+  <div class="subsection-head">Shared start <span class="actor-tag client">Client</span> <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row" style="margin-bottom: 56px;">
+
+    <!-- 1. Splash -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 01 · SPLASH</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-gradient-night); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+          <div style="width: 64px; height: 64px; border-radius: 16px; background: var(--qtm-navy); display:flex; align-items:center; justify-content:center; box-shadow: 0 8px 24px rgba(0,0,0,0.4); overflow:hidden;">
+            <img src="../assets/qtm-icon.png" style="width: 100%; height: 100%; object-fit: cover;" alt=""/>
+          </div>
+          <div style="color:#fff; font-size: 16px; font-weight: 800; letter-spacing: -0.3px;">QuickTaskMate</div>
+          <div style="color: rgba(255,255,255,0.7); font-size: 10px; text-align: center; padding: 0 32px; line-height: 14px;">Verified helpers, fair prices,<br/>no chasing tradies.</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px; width: 80%;">
+            <button class="btn-mini primary mini">Get started</button>
+            <button class="btn-mini dark mini">I have an account</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Decide whether to download or sign in</div>
+        <span class="verb primary">Tap "Get started"</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 2. Phone entry -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 02 · PHONE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-gradient-night); padding: 32px 16px; height: 100%;">
+          <div style="color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 6px;">What's your number?</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 10px; line-height: 14px; margin-bottom: 18px;">We'll send a 6-digit code. SMS only — no spam.</div>
+          <label class="field-label-mini dark">Mobile</label>
+          <div style="display:flex; gap: 6px;">
+            <div class="input-mini dark" style="flex: 0 0 44px; padding: 7px 6px; font-size: 10px;">+61</div>
+            <input class="input-mini dark" style="flex: 1;" value="412 345 678"/>
+          </div>
+          <button class="btn-mini primary" style="margin-top: 14px;">Send code</button>
+          <div style="color: rgba(255,255,255,0.5); font-size: 9px; margin-top: 16px; line-height: 13px;">By continuing you agree to QTM's <span style="color: var(--qtm-blue-500);">Terms</span> &amp; <span style="color: var(--qtm-blue-500);">Privacy Policy</span>.</div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Enter mobile number to receive verification</div>
+        <span class="verb primary">Tap "Send code"</span>
+        <div class="note">en-AU only · +61 prefix locked</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 3. OTP -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 03 · OTP</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-gradient-night); padding: 32px 16px; height: 100%;">
+          <div style="color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 6px;">Check your texts</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 10px; line-height: 14px; margin-bottom: 18px;">We sent a code to +61&nbsp;412&nbsp;345&nbsp;678</div>
+          <div class="otp-mini">
+            <div class="otp-cell-mini dark filled">4</div>
+            <div class="otp-cell-mini dark filled">2</div>
+            <div class="otp-cell-mini dark filled">8</div>
+            <div class="otp-cell-mini dark filled">1</div>
+            <div class="otp-cell-mini dark"></div>
+            <div class="otp-cell-mini dark"></div>
+          </div>
+          <div style="color: rgba(255,255,255,0.5); font-size: 9px; margin-top: 14px;">Resend in 0:42</div>
+          <button class="btn-mini ghost" style="color: var(--qtm-blue-500); margin-top: auto; position: absolute; bottom: 16px; left: 16px; right: 16px; width: auto;">Wrong number?</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Verify ownership of the phone number</div>
+        <span class="verb system">Auto-submit on 6th digit</span>
+        <div class="note">3 wrong attempts → lockout 5 min</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 4. Role pick -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 04 · ROLE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-gradient-night); padding: 32px 16px; height: 100%;">
+          <div style="color: #fff; font-size: 16px; font-weight: 700; margin-bottom: 4px;">How will you use QTM?</div>
+          <div style="color: rgba(255,255,255,0.6); font-size: 10px; line-height: 14px; margin-bottom: 18px;">You can switch later in settings.</div>
+          <div style="background: rgba(37,99,235,0.2); border: 1.5px solid var(--qtm-blue-500); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+            <div style="color: #fff; font-size: 13px; font-weight: 700;">I need help</div>
+            <div style="color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 2px; line-height: 13px;">Post jobs · book trusted helpers</div>
+            <div style="color: var(--qtm-blue-500); font-size: 9px; font-weight: 600; margin-top: 6px;">CLIENT · 2 min setup</div>
+          </div>
+          <div style="background: rgba(16,185,129,0.15); border: 1.5px solid rgba(16,185,129,0.4); border-radius: 12px; padding: 12px;">
+            <div style="color: #fff; font-size: 13px; font-weight: 700;">I want to earn</div>
+            <div style="color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 2px; line-height: 13px;">Accept jobs · build reputation</div>
+            <div style="color: #6EE7B7; font-size: 9px; font-weight: 600; margin-top: 6px;">HELPER · 14 verification steps</div>
+          </div>
+          <button class="btn-mini primary" style="margin-top: 14px;">Continue</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Choose Client or Helper path</div>
+        <span class="verb primary">Pick role</span>
+        <div class="note">⚠ This is the fork. Helper path is 7× longer.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client fork -->
+  <div class="subsection-head">Client fork — 1 more screen <span class="actor-tag client">Client</span></div>
+  <div class="flow-row" style="margin-bottom: 56px;">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 05 · PROFILE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">A few quick details</div>
+          <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 14px; line-height: 14px;">So helpers know who's at the door.</div>
+          <label class="field-label-mini">First name</label>
+          <input class="input-mini focused" value="Michael" />
+          <label class="field-label-mini" style="margin-top: 8px;">Suburb</label>
+          <input class="input-mini" value="Brunswick, VIC" />
+          <label class="field-label-mini" style="margin-top: 8px;">Photo (optional)</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div class="avatar-mini lg">M</div>
+            <div style="font-size: 10px; color: var(--qtm-blue-600); font-weight: 600;">Add photo</div>
+          </div>
+          <button class="btn-mini primary" style="margin-top: 16px;">Find a helper</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Set name + suburb · land on home</div>
+        <span class="verb primary">Submit &amp; enter app</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 06 · CLIENT HOME</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div class="grad-head-mini">
+            <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <div class="greet">Good morning,</div>
+                <div class="name">Michael</div>
+              </div>
+              <div style="display:flex; gap: 4px;"><div class="icon-btn-mini">🔍</div><div class="icon-btn-mini">🔔</div></div>
+            </div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div class="section-title-mini"><h5>What do you need?</h5></div>
+            <div class="svc-grid-mini">
+              <div class="item"><div class="svc-tile-mini" style="background:#EFF6FF;">🏠</div><span class="lbl">Cleaning</span></div>
+              <div class="item"><div class="svc-tile-mini" style="background:#ECFDF5;">🌿</div><span class="lbl">Outdoor</span></div>
+              <div class="item"><div class="svc-tile-mini" style="background:#FAF5FF;">🐕</div><span class="lbl">Pet</span></div>
+              <div class="item"><div class="svc-tile-mini" style="background:#FFF7ED;">🔧</div><span class="lbl">Handyman</span></div>
+            </div>
+          </div>
+          <div class="tabbar-mini">
+            <div class="tab active"><div class="ico">🏠</div>Home</div>
+            <div class="tab"><div class="ico">📋</div>Jobs</div>
+            <div class="tab"><div class="ico">💬</div>Chat</div>
+            <div class="tab"><div class="ico">💳</div>Wallet</div>
+            <div class="tab"><div class="ico">👤</div>You</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">In the app · ready to post</div>
+        <span class="verb">Onboarding complete</span>
+        <div class="note">⏱ Average time: 1m 48s</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Helper fork: 14-step verification, condensed to 6 representative -->
+  <div class="subsection-head">Helper fork — 14-step verification <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row wrap" style="gap: 12px; margin-bottom: 12px;">
+
+    <!-- Step 1 of 14 -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>1/14 · BASICS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="display:flex; justify-content: space-between; font-size: 9px; color: var(--qtm-text-2); margin-bottom: 6px;"><span>Verification</span><span>1 of 14</span></div>
+          <div style="height: 4px; background: var(--qtm-bg-2); border-radius: 999px; margin-bottom: 16px;">
+            <div style="width: 7%; height: 100%; background: var(--qtm-success); border-radius: 999px;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">Tell us about you</div>
+          <label class="field-label-mini">Full legal name</label>
+          <input class="input-mini" value="Sarah Kowalski" />
+          <label class="field-label-mini" style="margin-top: 6px;">DOB</label>
+          <input class="input-mini" value="14 / 03 / 1991" />
+          <label class="field-label-mini" style="margin-top: 6px;">Suburb you'll serve</label>
+          <input class="input-mini focused" value="Brunswick + 10km" />
+          <button class="btn-mini helper" style="margin-top: 14px;">Continue</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Step</div>
+        <div class="title">Legal identity basics</div>
+        <span class="verb helper">Continue</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 4 of 14 -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>4/14 · ID UPLOAD</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="display:flex; justify-content: space-between; font-size: 9px; color: var(--qtm-text-2); margin-bottom: 6px;"><span>Verification</span><span>4 of 14</span></div>
+          <div style="height: 4px; background: var(--qtm-bg-2); border-radius: 999px; margin-bottom: 16px;">
+            <div style="width: 28%; height: 100%; background: var(--qtm-success); border-radius: 999px;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">Upload your ID</div>
+          <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 14px; line-height: 14px;">Driver licence or passport. We use Stripe Identity — your ID is encrypted and never shared.</div>
+
+          <div style="border: 1.5px dashed var(--qtm-border); border-radius: 10px; padding: 16px; text-align: center; background: var(--qtm-bg);">
+            <div style="font-size: 22px; margin-bottom: 6px;">📷</div>
+            <div style="font-size: 11px; font-weight: 600;">Front of licence</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 2px;">Tap to capture</div>
+          </div>
+          <div style="border: 1.5px solid var(--qtm-success); border-radius: 10px; padding: 8px 10px; margin-top: 8px; background: var(--qtm-success-soft); display: flex; align-items: center; gap: 6px;">
+            <span style="color: var(--qtm-success);">✓</span>
+            <div style="font-size: 10px; font-weight: 600; color: var(--qtm-success);">Back captured · clear</div>
+          </div>
+          <button class="btn-mini helper" style="margin-top: 12px;">Submit for review</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Step</div>
+        <div class="title">Photo ID via Stripe Identity</div>
+        <span class="verb helper">Capture · submit</span>
+        <div class="note">↳ Stripe webhook back in ~30s</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 8 of 14 -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>8/14 · SKILLS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="display:flex; justify-content: space-between; font-size: 9px; color: var(--qtm-text-2); margin-bottom: 6px;"><span>Verification</span><span>8 of 14</span></div>
+          <div style="height: 4px; background: var(--qtm-bg-2); border-radius: 999px; margin-bottom: 16px;">
+            <div style="width: 57%; height: 100%; background: var(--qtm-success); border-radius: 999px;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">What can you do?</div>
+          <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 12px; line-height: 14px;">Pick everything you've done professionally.</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+            <span class="pill-mini cleaning">🏠 Cleaning ✓</span>
+            <span class="pill-mini outdoor">🌿 Outdoor ✓</span>
+            <span class="pill-mini pet" style="opacity: 0.5;">🐕 Pet</span>
+            <span class="pill-mini handyman">🔧 Handyman ✓</span>
+            <span class="pill-mini moving" style="opacity: 0.5;">📦 Moving</span>
+            <span class="pill-mini delivery" style="opacity: 0.5;">🚚 Delivery</span>
+          </div>
+          <label class="field-label-mini" style="margin-top: 12px;">Years experience</label>
+          <input class="input-mini" value="6 years" />
+          <label class="field-label-mini" style="margin-top: 8px;">Hourly rate</label>
+          <input class="input-mini focused" value="$45 / hour" />
+          <button class="btn-mini helper" style="margin-top: 12px;">Continue</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Step</div>
+        <div class="title">Self-declared skills + rate</div>
+        <span class="verb helper">Pick categories</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 11 of 14 -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>11/14 · POLICE CHECK</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="display:flex; justify-content: space-between; font-size: 9px; color: var(--qtm-text-2); margin-bottom: 6px;"><span>Verification</span><span>11 of 14</span></div>
+          <div style="height: 4px; background: var(--qtm-bg-2); border-radius: 999px; margin-bottom: 16px;">
+            <div style="width: 78%; height: 100%; background: var(--qtm-success); border-radius: 999px;"></div>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">National police check</div>
+          <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 12px; line-height: 14px;">Mandatory for working in homes. We process via AFP.</div>
+
+          <div style="background: var(--qtm-warning-soft); border: 1px solid var(--qtm-warning); border-radius: 10px; padding: 10px; margin-bottom: 10px;">
+            <div style="font-size: 10px; font-weight: 700; color: #92400E;">⏱ 1–3 business days</div>
+            <div style="font-size: 9px; color: #92400E; margin-top: 2px; line-height: 13px;">You'll be notified by SMS &amp; in-app when results land.</div>
+          </div>
+          <div style="font-size: 11px; font-weight: 600; margin-bottom: 4px;">Cost: $42 (refunded after 5 jobs)</div>
+          <div style="font-size: 9px; color: var(--qtm-text-2); margin-bottom: 12px;">Charged to your card now.</div>
+          <button class="btn-mini helper">Pay &amp; submit</button>
+          <button class="btn-mini ghost" style="margin-top: 6px; font-size: 10px;">Why is this required?</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Step</div>
+        <div class="title">Pay for + submit AFP check</div>
+        <span class="verb helper">Pay $42</span>
+        <div class="note">⚠ Paywall · drop-off risk</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 14 of 14 -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>14/14 · WAITING</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-gradient-night); padding: 32px 16px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+          <div style="font-size: 36px; margin-bottom: 12px;">⏱</div>
+          <div style="color: #fff; font-size: 14px; font-weight: 700;">All done!</div>
+          <div style="color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 6px; line-height: 14px;">We're reviewing your details. Most helpers are approved within 24 hours.</div>
+          <div style="background: rgba(255,255,255,0.08); border-radius: 10px; padding: 10px; margin-top: 16px; width: 100%; text-align: left;">
+            <div style="font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Status</div>
+            <div style="color: #fff; font-size: 11px; font-weight: 600; margin-top: 4px;">⏱ Pending review</div>
+          </div>
+          <div style="color: rgba(255,255,255,0.5); font-size: 9px; margin-top: 12px;">We'll text you the moment you're approved.</div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Submitted · awaiting admin approval</div>
+        <span class="verb system">Background: AFP + ID</span>
+        <div class="note">→ Admin reviews in dashboard</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Helper outcomes -->
+  <div class="flow-row wrap" style="gap: 36px; margin-top: 32px;">
+    <div class="postit">
+      <strong>✓ Approved (87%)</strong>
+      Push + SMS: "You're verified! 12 jobs nearby right now." Helper home unlocks.
+    </div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);">
+      <strong>⚠ More info needed (10%)</strong>
+      "We couldn't read your ID — please reupload." In-app banner; resume from step 4.
+    </div>
+    <div class="postit" style="background: #FECACA; color: #7F1D1D; transform: rotate(-2deg);">
+      <strong>✕ Rejected (3%)</strong>
+      Police check failed or duplicate identity. Email + appeal link to support.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     2 · POST A JOB (Client)
+     ============================================================ -->
+<section class="flow-section" id="post-job" data-screen-label="03 Post a job">
+  <header class="section-head">
+    <span class="num">02</span>
+    <div>
+      <h2>Post a job</h2>
+      <p>From the home tile tap to the job sitting in the helper queue. Five screens, ~90 seconds. The category drives the question set — cleaning asks bedrooms; outdoor asks lawn size; handyman asks photos.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Happy path <span class="actor-tag client">Client</span></div>
+
+  <div class="flow-row wrap" style="row-gap: 56px;">
+    <!-- 1. Pick category -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 01 · CATEGORY</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div class="grad-head-mini">
+            <div class="pageTitle">What needs doing?</div>
+            <div style="font-size: 9px; color: rgba(255,255,255,0.7); margin-top: 2px;">Pick a category to start</div>
+          </div>
+          <div style="padding: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <div style="border: 2px solid var(--qtm-blue-600); background: var(--qtm-blue-50); border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 22px;">🏠</div>
+                <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Cleaning</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">From $45/hr</div>
+              </div>
+              <div style="border: 1.5px solid var(--qtm-border); background: #fff; border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 22px;">🌿</div>
+                <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Outdoor</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">From $40/hr</div>
+              </div>
+              <div style="border: 1.5px solid var(--qtm-border); background: #fff; border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 22px;">🐕</div>
+                <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Pet care</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">From $30/visit</div>
+              </div>
+              <div style="border: 1.5px solid var(--qtm-border); background: #fff; border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 22px;">🔧</div>
+                <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Handyman</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">From $60/hr</div>
+              </div>
+            </div>
+            <button class="btn-mini primary" style="margin-top: 12px;">Continue · Cleaning</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Pick a service category</div>
+        <span class="verb primary">Tap a card</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 2. Details (category-specific) -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 02 · DETAILS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="display:flex; gap: 6px; align-items: center; margin-bottom: 8px;">
+            <span class="pill-mini cleaning">🏠 Cleaning</span>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 4px;">Tell us about the job</div>
+          <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 12px;">More detail = better quotes.</div>
+          <label class="field-label-mini">Bedrooms</label>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn-mini secondary" style="font-size: 11px; padding: 6px;">1</button>
+            <button class="btn-mini secondary" style="font-size: 11px; padding: 6px;">2</button>
+            <button class="btn-mini primary" style="font-size: 11px; padding: 6px;">3</button>
+            <button class="btn-mini secondary" style="font-size: 11px; padding: 6px;">4+</button>
+          </div>
+          <label class="field-label-mini" style="margin-top: 8px;">Type</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+            <span class="pill-mini" style="background: var(--qtm-blue-50); border: 1px solid var(--qtm-blue-600); color: var(--qtm-blue-700);">End-of-lease ✓</span>
+            <span class="pill-mini" style="background: #fff; border: 1px solid var(--qtm-border); color: var(--qtm-text-2);">Regular</span>
+            <span class="pill-mini" style="background: #fff; border: 1px solid var(--qtm-border); color: var(--qtm-text-2);">Deep clean</span>
+          </div>
+          <label class="field-label-mini" style="margin-top: 8px;">Notes (optional)</label>
+          <textarea class="input-mini" rows="2" style="resize: none; font-family: inherit;">Two cats — please use eco products only.</textarea>
+          <button class="btn-mini primary" style="margin-top: 10px;">Continue</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Specify what + how much</div>
+        <span class="verb primary">Pick &amp; type</span>
+        <div class="note">Smart defaults from history</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 3. When + where -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 03 · WHEN &amp; WHERE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">When &amp; where?</div>
+          <label class="field-label-mini">Address</label>
+          <input class="input-mini" value="42 Sydney Rd, Brunswick" />
+          <label class="field-label-mini" style="margin-top: 8px;">When</label>
+          <div style="display:flex; flex-direction: column; gap: 4px;">
+            <div style="border: 1.5px solid var(--qtm-blue-600); background: var(--qtm-blue-50); border-radius: 8px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 11px; font-weight: 700;">⚡ As soon as possible</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">Match in ~15 min · +$10 priority</div>
+              </div>
+              <div style="color: var(--qtm-blue-600); font-size: 11px;">●</div>
+            </div>
+            <div style="border: 1.5px solid var(--qtm-border); background: #fff; border-radius: 8px; padding: 8px 10px;">
+              <div style="font-size: 11px; font-weight: 700;">📅 Schedule</div>
+              <div style="font-size: 9px; color: var(--qtm-text-2);">Pick day &amp; time window</div>
+            </div>
+          </div>
+          <label class="field-label-mini" style="margin-top: 8px;">Access</label>
+          <select class="input-mini">
+            <option>I'll be home</option>
+          </select>
+          <button class="btn-mini primary" style="margin-top: 10px;">Continue</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Time window + address + access</div>
+        <span class="verb primary">Pick "ASAP"</span>
+        <div class="note">↳ Triggers radius search now</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 4. Review/budget -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 04 · REVIEW</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 14px; font-weight: 700; margin-bottom: 12px;">Review &amp; post</div>
+          <div class="card-mini">
+            <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 4px;">
+              <span class="pill-mini cleaning">🏠 Cleaning</span>
+            </div>
+            <div style="font-size: 11px; font-weight: 700;">3-bed end-of-lease clean</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 2px;">42 Sydney Rd, Brunswick</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2);">⚡ ASAP · +$10 priority</div>
+          </div>
+          <div style="background: var(--qtm-bg); border-radius: 10px; padding: 10px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px;"><span>Estimate</span><span>$110–140</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 4px;"><span>Priority</span><span>+$10</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 4px;"><span>QTM fee (incl)</span><span style="color: var(--qtm-text-3);">15%</span></div>
+            <div style="border-top: 1px dashed var(--qtm-border); margin: 6px 0;"></div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700;"><span>Hold on card</span><span>$140</span></div>
+            <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 2px;">Released to helper on completion · refund anytime before start</div>
+          </div>
+          <button class="btn-mini primary" style="margin-top: 10px;">Post job · hold $140</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Confirm details + escrow hold</div>
+        <span class="verb primary">Post job</span>
+        <div class="note">$ held, not charged</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 5. Posted, searching -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 05 · POSTED</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div class="grad-head-mini" style="padding-bottom: 28px;">
+            <div style="text-align: center;">
+              <div style="font-size: 32px; margin-bottom: 6px;">📡</div>
+              <div style="color: #fff; font-size: 14px; font-weight: 700;">Looking for helpers</div>
+              <div style="color: rgba(255,255,255,0.8); font-size: 10px; margin-top: 4px;">12 within 5km · pinging now</div>
+            </div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="background: var(--qtm-bg); border-radius: 10px; padding: 10px; display: flex; gap: 8px; align-items: center;">
+              <div style="position: relative; width: 24px; height: 24px;">
+                <div style="position: absolute; inset: 0; border: 2px solid var(--qtm-blue-600); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+              </div>
+              <div>
+                <div style="font-size: 11px; font-weight: 600;">First quotes in ~12s</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">We'll notify you when they arrive</div>
+              </div>
+            </div>
+            <div style="margin-top: 10px;">
+              <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 6px;">Helpers nearby</div>
+              <div style="display: flex; gap: -6px;">
+                <div class="avatar-mini helper" style="border: 2px solid #fff;">SK</div>
+                <div class="avatar-mini helper" style="margin-left: -6px; border: 2px solid #fff;">JT</div>
+                <div class="avatar-mini helper" style="margin-left: -6px; border: 2px solid #fff;">MR</div>
+                <div class="avatar-mini" style="background: var(--qtm-bg-2); color: var(--qtm-text-2); margin-left: -6px; border: 2px solid #fff; font-size: 8px;">+9</div>
+              </div>
+            </div>
+            <button class="btn-mini ghost" style="margin-top: 12px; color: var(--qtm-danger); font-size: 10px;">Cancel job · refund $140</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Job is live · waiting for quotes</div>
+        <span class="verb system">Socket: job:available → 12 helpers</span>
+        <div class="note">→ Continues in flow 03</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge cases -->
+  <div class="subsection-head">Edge cases &amp; alternates</div>
+  <div class="flow-row wrap" style="gap: 32px;">
+    <div class="postit">
+      <strong>⏱ No helpers in 60s</strong>
+      Banner: "Taking longer than usual. Want to widen radius to 15km, or schedule for tomorrow?" Two-button card replaces stats.
+    </div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);">
+      <strong>💳 Card declined</strong>
+      Block at step 4. "Add another card to post." In-line Apple Pay / Google Pay buttons; do not redirect.
+    </div>
+    <div class="postit" style="background: #FECACA; color: #7F1D1D; transform: rotate(-1.5deg);">
+      <strong>📍 Outside service area</strong>
+      Suburb lookup fails radius check. Offer waitlist email + show next-closest suburb we serve.
+    </div>
+    <div class="postit" style="transform: rotate(-1deg);">
+      <strong>↩ Saved drafts</strong>
+      Backing out of step 2/3/4 saves a draft. Home shows "Resume draft" card at top until 24h expiry.
+    </div>
+  </div>
+</section>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<!-- ============================================================
+     3 · MATCH — server pings helpers, helper accepts (swimlane + screens)
+     ============================================================ -->
+<section class="flow-section" id="match" data-screen-label="04 Match & accept">
+  <header class="section-head">
+    <span class="num">03</span>
+    <div>
+      <h2>Match &amp; accept</h2>
+      <p>The 60 seconds nobody sees the same way. Client watches a spinner; helpers see a job card pop up; server is fanning out sockets. Below: the swimlane (what each actor does) and the helper-side screens (what they actually feel).</p>
+    </div>
+  </header>
+
+  <!-- ---------------- Swimlane ---------------- -->
+  <div class="subsection-head">Cross-actor swimlane</div>
+  <div class="swimlane-grid" style="grid-template-columns: 140px repeat(7, 1fr);">
+    <!-- Lane: Client -->
+    <div class="lane-label client"><span class="dot"></span>Client</div>
+    <div class="step-cell active">
+      <div class="step-num">T+0s</div>
+      <div class="step-action">Posts job · $140 held</div>
+      <div>Sees "Looking for helpers" spinner</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell active">
+      <div class="step-num">T+18s</div>
+      <div class="step-action">Push: "3 quotes in"</div>
+      <div>Reviews helper cards · ratings</div>
+    </div>
+    <div class="step-cell active">
+      <div class="step-num">T+45s</div>
+      <div class="step-action">Picks Sarah K. (4.9★)</div>
+      <div>Tap "Confirm helper"</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell active">
+      <div class="step-num">T+50s</div>
+      <div class="step-action">Sees helper assigned</div>
+      <div>"Sarah is on her way"</div>
+    </div>
+
+    <!-- Lane: System -->
+    <div class="lane-label system"><span class="dot"></span>System</div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell system">
+      <div class="step-num">T+1s</div>
+      <div class="step-action">job.status = open</div>
+      <div>geo-radius query · 12 hits</div>
+    </div>
+    <div class="step-cell system">
+      <div class="step-num">T+2s</div>
+      <div class="step-action">socket: job:available</div>
+      <div>fan out to 12 helpers</div>
+    </div>
+    <div class="step-cell system">
+      <div class="step-num">T+18s</div>
+      <div class="step-action">push: "3 quotes" → client</div>
+      <div>aggregates as quotes arrive</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell system">
+      <div class="step-num">T+45s</div>
+      <div class="step-action">job.assignedTo = sarah</div>
+      <div>cancel quotes from others</div>
+    </div>
+    <div class="step-cell system">
+      <div class="step-num">T+46s</div>
+      <div class="step-action">socket: job:assigned → both</div>
+      <div>create chat room</div>
+    </div>
+
+    <!-- Lane: Helpers (broadcast) -->
+    <div class="lane-label helper"><span class="dot"></span>Helpers (12)</div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell helper">
+      <div class="step-num">T+2s</div>
+      <div class="step-action">Push: "Job nearby — $140"</div>
+      <div>Card on Helper home</div>
+    </div>
+    <div class="step-cell helper">
+      <div class="step-num">T+8–18s</div>
+      <div class="step-action">3 of 12 send quote</div>
+      <div>9 ignore / decline silently</div>
+    </div>
+    <div class="step-cell empty"></div>
+    <div class="step-cell helper">
+      <div class="step-num">T+45s</div>
+      <div class="step-action">Sarah: "You got the job"</div>
+      <div>Other 2: "Job filled"</div>
+    </div>
+    <div class="step-cell empty"></div>
+  </div>
+
+  <!-- ---------------- Helper-side screens ---------------- -->
+  <div class="subsection-head" style="margin-top: 56px;">Helper screens · receiving the job <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row">
+
+    <!-- 1. Job pop / push -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 01 · INCOMING</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-bg);">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 14px; color: #fff;">
+            <div style="font-size: 11px; opacity: 0.85;">G'day,</div>
+            <div style="font-size: 14px; font-weight: 700;">Sarah</div>
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 8px;">
+              <div class="toggle-mini on" style="background: rgba(255,255,255,0.4);"></div>
+              <span style="font-size: 10px; font-weight: 600;">Online · accepting jobs</span>
+            </div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="border: 2px solid var(--qtm-success); background: #fff; border-radius: 12px; padding: 10px; box-shadow: 0 4px 16px rgba(16,185,129,0.2); position: relative;">
+              <div style="position: absolute; top: -8px; left: 12px; background: var(--qtm-success); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 999px;">⚡ NEW · 1.2km</div>
+              <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px; margin-bottom: 6px;">
+                <span class="pill-mini cleaning">🏠 Cleaning</span>
+                <span class="pill-mini warning">⚡ ASAP</span>
+              </div>
+              <div style="font-size: 11px; font-weight: 700;">3-bed end-of-lease clean</div>
+              <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 2px;">Brunswick · 2 cats · eco only</div>
+              <div style="font-size: 14px; font-weight: 800; color: var(--qtm-success); margin-top: 4px;">$140</div>
+              <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <button class="btn-mini ghost" style="font-size: 10px; padding: 6px;">View</button>
+                <button class="btn-mini helper" style="flex: 2; font-size: 10px; padding: 6px;">Send quote</button>
+              </div>
+            </div>
+            <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 8px; text-align: center;">⏱ Auto-decline in 4:32</div>
+          </div>
+          <div class="tabbar-mini">
+            <div class="tab"><div class="ico">🏠</div>Home</div>
+            <div class="tab active"><div class="ico">📋</div>Jobs</div>
+            <div class="tab"><div class="ico">💬</div>Chat</div>
+            <div class="tab"><div class="ico">💰</div>Earn</div>
+            <div class="tab"><div class="ico">👤</div>You</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Decide if this job is worth it</div>
+        <span class="verb helper">Tap "Send quote"</span>
+        <div class="note">⏱ 5 min auto-decline timer</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 2. Job detail -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 02 · DETAIL</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 14px; color: #fff;">
+            <div style="font-size: 9px; opacity: 0.7;">‹ Back</div>
+            <div style="font-size: 14px; font-weight: 700; margin-top: 8px;">Job details</div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px;">
+              <span class="pill-mini cleaning">🏠 Cleaning</span>
+              <span class="pill-mini warning">⚡ ASAP</span>
+            </div>
+            <div style="font-size: 12px; font-weight: 700;">3-bed end-of-lease</div>
+            <div style="font-size: 16px; font-weight: 800; color: var(--qtm-success); margin: 4px 0;">$140</div>
+            <div style="font-size: 10px; color: var(--qtm-text-2); line-height: 14px;">📍 Brunswick · 1.2km from you<br/>⏰ Now (next 30 min)<br/>🏠 3 bed · 2 cats · eco only</div>
+
+            <div style="background: var(--qtm-bg); border-radius: 8px; padding: 8px; margin-top: 8px;">
+              <div style="font-size: 9px; color: var(--qtm-text-3); margin-bottom: 4px;">Posted by</div>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <div class="avatar-mini lg">M</div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700;">Michael · ★ 4.8</div>
+                  <div style="font-size: 9px; color: var(--qtm-text-2);">23 jobs · regular client</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 4px; margin-top: 10px;">
+              <button class="btn-mini ghost" style="flex: 1; font-size: 10px; padding: 6px;">Decline</button>
+              <button class="btn-mini helper" style="flex: 2; font-size: 10px; padding: 6px;">Send quote · $140</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Inspect details + client reputation</div>
+        <span class="verb helper">Send quote</span>
+        <div class="note">Can negotiate price ±15%</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 3. Quote sent / waiting -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 03 · WAITING</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-bg);">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 14px; color: #fff;">
+            <div style="font-size: 14px; font-weight: 700;">Your quote is in</div>
+          </div>
+          <div style="padding: 12px;">
+            <div style="background: #fff; border-radius: 12px; padding: 14px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">⏱</div>
+              <div style="font-size: 12px; font-weight: 700;">Waiting for Michael</div>
+              <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 4px; line-height: 13px;">2 other helpers also quoted.<br/>You'll know within 2 min.</div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px dashed var(--qtm-border); margin-top: 10px;">
+                <span style="font-size: 10px; color: var(--qtm-text-2);">Your quote</span>
+                <span style="font-size: 12px; font-weight: 700;">$140</span>
+              </div>
+              <button class="btn-mini ghost" style="color: var(--qtm-danger); font-size: 10px; margin-top: 4px;">Withdraw quote</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">State</div>
+        <div class="title">Quote sent, awaiting client pick</div>
+        <span class="verb system">Socket: quote.submitted</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <!-- 4. Got the job -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 04 · WON</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: linear-gradient(180deg, #059669 0%, #10B981 100%); height: 100%; padding: 32px 16px; color: #fff; text-align: center;">
+          <div style="font-size: 44px; margin-bottom: 12px;">🎉</div>
+          <div style="font-size: 18px; font-weight: 800;">You got it!</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 4px; line-height: 15px;">Michael accepted your quote.<br/>Head to 42 Sydney Rd, Brunswick.</div>
+          <div style="background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px; margin-top: 20px; text-align: left;">
+            <div style="font-size: 9px; opacity: 0.7;">Your earnings</div>
+            <div style="font-size: 20px; font-weight: 800; margin-top: 2px;">$119</div>
+            <div style="font-size: 9px; opacity: 0.7;">$140 − 15% QTM fee</div>
+          </div>
+          <div style="display: flex; gap: 6px; margin-top: 16px;">
+            <button class="btn-mini dark" style="flex: 1;">💬 Chat</button>
+            <button class="btn-mini" style="flex: 2; background: #fff; color: var(--qtm-success);">Start drive</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Job assigned · drive begins</div>
+        <span class="verb helper">Start drive</span>
+        <div class="note">→ Continues in flow 04</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Decline tree -->
+  <div class="subsection-head" style="margin-top: 56px;">Decision tree · what makes a helper accept</div>
+  <div style="background: #fff; border: 1px solid var(--qtm-border); border-radius: 16px; padding: 32px; box-shadow: var(--qtm-shadow-sm); position: relative;">
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 900px; margin: 0 auto;">
+
+      <!-- Q1 -->
+      <div style="display: flex; justify-content: center;">
+        <div class="tree-node decision" style="margin-top: 12px;">
+          <div class="node-title">Job pings my phone</div>
+          <div class="node-meta">Distance, pay, category match</div>
+        </div>
+      </div>
+
+      <!-- Decision row -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div>
+          <div style="text-align: center; font-size: 10px; color: var(--qtm-text-2); margin-bottom: 8px; font-weight: 600;">↓ Distance &gt; 15km</div>
+          <div class="tree-node outcome bad">
+            <div class="node-title">Auto-decline</div>
+            <div class="node-meta">Server filters before push (no notification)</div>
+          </div>
+        </div>
+        <div>
+          <div style="text-align: center; font-size: 10px; color: var(--qtm-text-2); margin-bottom: 8px; font-weight: 600;">↓ Pay too low</div>
+          <div class="tree-node outcome bad">
+            <div class="node-title">Decline · counter-offer</div>
+            <div class="node-meta">Send quote at $X higher; client decides</div>
+          </div>
+        </div>
+        <div>
+          <div style="text-align: center; font-size: 10px; color: var(--qtm-text-2); margin-bottom: 8px; font-weight: 600;">↓ Pay + distance OK</div>
+          <div class="tree-node decision" style="margin-top: 12px;">
+            <div class="node-title">Client rating ≥ 4.0?</div>
+            <div class="node-meta">Plus dispute history</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final row -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+        <div></div>
+        <div></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="tree-node outcome good">
+            <div class="node-title">Accept ✓</div>
+            <div class="node-meta">Send quote at posted price</div>
+          </div>
+          <div class="tree-node outcome bad">
+            <div class="node-title">Skip</div>
+            <div class="node-meta">No reply · job times out for them</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge cases -->
+  <div class="subsection-head" style="margin-top: 48px;">Edge cases</div>
+  <div class="flow-row wrap" style="gap: 32px;">
+    <div class="postit">
+      <strong>⏱ No quotes after 60s</strong>
+      Client banner offers: widen radius (15km), bump price (+$20), or schedule for tomorrow. Job stays open.
+    </div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);">
+      <strong>↩ Client cancels mid-quote</strong>
+      Helpers see "Job withdrawn" toast. Quotes voided. No fee. Client gets full refund.
+    </div>
+    <div class="postit" style="background: #FECACA; color: #7F1D1D; transform: rotate(-2deg);">
+      <strong>👻 Helper accepts then ghosts</strong>
+      No location ping in 10 min · job auto-released, client re-prompted, helper rating −0.2.
+    </div>
+    <div class="postit" style="transform: rotate(-1deg);">
+      <strong>💱 Price negotiation</strong>
+      Helper quotes $160 instead of $140. Client sees both prices side-by-side; can accept cheaper or pay extra.
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     4 · SERVICE DELIVERY (Client + Helper, parallel)
+     ============================================================ -->
+<section class="flow-section" id="service" data-screen-label="05 Service delivery">
+  <header class="section-head">
+    <span class="num">04</span>
+    <div>
+      <h2>Service delivery</h2>
+      <p>Both apps in lockstep. Helper's status updates push live to the client's tracking screen via socket. Below, two parallel rails — every screen on the helper side has its mirror on the client side.</p>
+    </div>
+  </header>
+
+  <!-- Helper rail -->
+  <div class="subsection-head">Helper side <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row" style="margin-bottom: 56px;">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 01 · EN ROUTE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div class="map-mini" style="height: 180px;">
+            <div class="map-pin-mini helper" style="left: 28%; top: 60%;"></div>
+            <div class="map-pin-mini" style="left: 62%; top: 28%;"></div>
+            <div class="map-route"></div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="font-size: 10px; color: var(--qtm-text-2);">Heading to</div>
+            <div style="font-size: 12px; font-weight: 700;">42 Sydney Rd, Brunswick</div>
+            <div style="display: flex; gap: 8px; margin-top: 6px; font-size: 10px;">
+              <span>🚗 8 min</span><span>3.2 km</span>
+            </div>
+            <div style="display: flex; gap: 4px; margin-top: 10px;">
+              <button class="btn-mini ghost" style="flex: 1; padding: 6px; font-size: 10px;">💬</button>
+              <button class="btn-mini helper" style="flex: 3; padding: 6px; font-size: 10px;">I've arrived</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Action</div>
+        <div class="title">Drive to address</div>
+        <span class="verb helper">Tap "I've arrived"</span>
+        <div class="note">Live GPS pings every 10s</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 02 · ARRIVED</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:53</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 22px; margin-bottom: 6px;">📍</div>
+          <div style="font-size: 13px; font-weight: 700;">You've arrived</div>
+          <div style="font-size: 10px; color: var(--qtm-text-2); margin-top: 4px; line-height: 14px;">Michael's been notified. Knock or call when ready.</div>
+
+          <div style="background: var(--qtm-bg); border-radius: 10px; padding: 10px; margin-top: 12px;">
+            <div style="font-size: 9px; color: var(--qtm-text-3);">Access</div>
+            <div style="font-size: 11px; margin-top: 2px;">"I'll be home"</div>
+          </div>
+
+          <div style="display: flex; gap: 4px; margin-top: 10px;">
+            <button class="btn-mini ghost" style="flex: 1; padding: 6px; font-size: 10px;">📞 Call</button>
+            <button class="btn-mini ghost" style="flex: 1; padding: 6px; font-size: 10px;">💬 Chat</button>
+          </div>
+          <button class="btn-mini helper" style="margin-top: 8px;">Start job</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Action</div>
+        <div class="title">At door · greet client</div>
+        <span class="verb helper">Tap "Start job"</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 03 · IN PROGRESS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>10:00</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px; background: var(--qtm-bg);">
+          <div style="background: #fff; border-radius: 12px; padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="pill-mini active">In progress</span>
+              <span style="font-family: var(--qtm-font-mono); font-size: 14px; font-weight: 700;">01:23:14</span>
+            </div>
+            <div style="font-size: 12px; font-weight: 700; margin: 8px 0 4px;">3-bed end-of-lease clean</div>
+
+            <div style="margin-top: 10px;">
+              <div style="font-size: 9px; color: var(--qtm-text-3); margin-bottom: 4px;">Checklist</div>
+              <div style="font-size: 10px; line-height: 18px;">
+                <div>✓ Kitchen</div>
+                <div>✓ Living room</div>
+                <div>✓ Bathroom 1</div>
+                <div style="color: var(--qtm-blue-600); font-weight: 600;">○ Bathroom 2 (now)</div>
+                <div style="color: var(--qtm-text-3);">○ Bedrooms (×3)</div>
+              </div>
+            </div>
+
+            <button class="btn-mini ghost" style="margin-top: 8px; padding: 6px; font-size: 10px;">+ Add photo</button>
+          </div>
+          <button class="btn-mini helper" style="margin-top: 10px;">Mark complete</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Action</div>
+        <div class="title">Work · check items off · timer runs</div>
+        <span class="verb helper">Mark complete</span>
+        <div class="note">Photos auto-attach to invoice</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>STEP 04 · DONE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>11:30</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: linear-gradient(180deg, #059669, #10B981); height: 100%; padding: 32px 16px; color: #fff; text-align: center;">
+          <div style="font-size: 44px;">✓</div>
+          <div style="font-size: 18px; font-weight: 800; margin-top: 8px;">Job complete</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 4px;">Awaiting Michael's confirmation</div>
+          <div style="background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px; margin-top: 18px; text-align: left;">
+            <div style="font-size: 9px; opacity: 0.7;">Earnings (pending)</div>
+            <div style="font-size: 22px; font-weight: 800; margin-top: 2px;">$119</div>
+            <div style="font-size: 9px; opacity: 0.7;">Released after client approves · ~2 hours</div>
+          </div>
+          <button class="btn-mini" style="margin-top: 16px; background: #fff; color: var(--qtm-success);">Find next job</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Submitted for client approval</div>
+        <span class="verb system">job.status = completed</span>
+        <div class="note">Auto-release in 2h if no action</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client rail -->
+  <div class="subsection-head">Client side · live tracking <span class="actor-tag client">Client</span></div>
+  <div class="flow-row">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>MIRROR 01 · TRACKING</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:45</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div class="map-mini" style="height: 180px;">
+            <div class="map-pin-mini helper" style="left: 28%; top: 60%;"></div>
+            <div class="map-pin-mini" style="left: 62%; top: 28%;"></div>
+            <div class="map-route"></div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <div class="avatar-mini helper">SK</div>
+              <div>
+                <div style="font-size: 11px; font-weight: 700;">Sarah is on her way</div>
+                <div style="font-size: 9px; color: var(--qtm-text-2);">★ 4.9 · ETA 8 min</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 4px; margin-top: 10px;">
+              <button class="btn-mini secondary" style="flex: 1; font-size: 10px; padding: 6px;">📞</button>
+              <button class="btn-mini primary" style="flex: 3; font-size: 10px; padding: 6px;">💬 Message Sarah</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">See helper en route · ETA</div>
+        <span class="verb">Watch / chat</span>
+      </div>
+    </div>
+
+    <div class="arrow dashed"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>MIRROR 02 · ARRIVED</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:53</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div class="grad-head-mini" style="background: linear-gradient(135deg, #10B981, #059669);">
+            <div class="pageTitle">Sarah's at the door</div>
+          </div>
+          <div style="padding: 12px;">
+            <div style="background: #fff; border-radius: 10px; padding: 10px; box-shadow: var(--qtm-shadow-sm);">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <div class="avatar-mini helper lg">SK</div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700;">Sarah Kowalski</div>
+                  <div style="font-size: 9px; color: var(--qtm-text-2);">★ 4.9 · 247 jobs</div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 4px; margin-top: 8px;">
+              <button class="btn-mini secondary" style="flex: 1; padding: 6px; font-size: 10px;">📞</button>
+              <button class="btn-mini secondary" style="flex: 1; padding: 6px; font-size: 10px;">💬</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Notif</div>
+        <div class="title">"Sarah's at the door"</div>
+        <span class="verb system">Push: helper.arrived</span>
+      </div>
+    </div>
+
+    <div class="arrow dashed"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>MIRROR 03 · LIVE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>10:30</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 12px; background: var(--qtm-bg);">
+          <div style="background: #fff; border-radius: 12px; padding: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="pill-mini active">In progress</span>
+              <span style="font-family: var(--qtm-font-mono); font-size: 12px; font-weight: 700;">00:53:14</span>
+            </div>
+            <div style="font-size: 11px; font-weight: 700; margin: 8px 0 6px;">Sarah is cleaning</div>
+            <div style="height: 4px; background: var(--qtm-bg-2); border-radius: 999px; margin-bottom: 8px;">
+              <div style="width: 55%; height: 100%; background: var(--qtm-blue-600); border-radius: 999px;"></div>
+            </div>
+            <div style="font-size: 9px; color: var(--qtm-text-2); line-height: 13px;">3 of 5 areas done · Bath 2 in progress</div>
+
+            <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px;">
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #DBEAFE, #BFDBFE); border-radius: 6px;"></div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #FED7AA, #FDBA74); border-radius: 6px;"></div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #A7F3D0, #6EE7B7); border-radius: 6px;"></div>
+            </div>
+            <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 4px;">3 progress photos</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">See progress without being there</div>
+        <span class="verb system">Socket: status updates</span>
+      </div>
+    </div>
+
+    <div class="arrow dashed"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>MIRROR 04 · APPROVE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>11:30</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 12px;">
+          <div style="text-align: center; margin-bottom: 12px;">
+            <div style="font-size: 28px;">🎉</div>
+            <div style="font-size: 13px; font-weight: 700; margin-top: 4px;">Sarah marked complete</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2);">Review photos &amp; release payment</div>
+          </div>
+          <div style="background: var(--qtm-bg); border-radius: 10px; padding: 10px;">
+            <div style="font-size: 10px; color: var(--qtm-text-2); margin-bottom: 6px;">Final photos (8)</div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px;">
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #DBEAFE, #93C5FD); border-radius: 4px;"></div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #FED7AA, #FB923C); border-radius: 4px;"></div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #A7F3D0, #34D399); border-radius: 4px;"></div>
+              <div style="aspect-ratio: 1; background: linear-gradient(135deg, #FBCFE8, #F472B6); border-radius: 4px;"></div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 4px; margin-top: 10px;">
+            <button class="btn-mini ghost" style="flex: 1; color: var(--qtm-danger); font-size: 10px; padding: 6px;">Dispute</button>
+            <button class="btn-mini primary" style="flex: 2; font-size: 10px; padding: 6px;">Approve · pay $140</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Approve work · release escrow</div>
+        <span class="verb primary">Approve &amp; pay</span>
+        <div class="note">Auto-approves in 2h if untouched</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge cases -->
+  <div class="subsection-head" style="margin-top: 48px;">Alternates</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>👻 Helper no-show</strong>If GPS ≠ near address &amp; no "arrived" tap by ETA+15min, client gets refund button + auto-rematch offer.</div>
+    <div class="postit" style="background:#FED7AA; color:#7C2D12; transform:rotate(1deg);"><strong>↩ Client cancels mid-job</strong>Helper paid prorated by elapsed time. Photos auto-saved to dispute case if needed.</div>
+    <div class="postit" style="background:#FECACA; color:#7F1D1D; transform:rotate(-1deg);"><strong>🚨 Safety panic</strong>Either party hits SOS in chat → location pinged + admin notified + helper hotline call within 60s.</div>
+    <div class="postit" style="transform:rotate(-2deg);"><strong>📷 No photos uploaded</strong>Helper warned at "mark complete" — photos strongly encouraged for disputes. Allowed but flagged.</div>
+  </div>
+
+</section>
+
+<!-- ============================================================
+     5 · CHAT (real-time messaging, both sides)
+     ============================================================ -->
+<section class="flow-section" id="chat" data-screen-label="06 Chat">
+  <header class="section-head">
+    <span class="num">05</span>
+    <div>
+      <h2>In-app chat</h2>
+      <p>One chat per job, scoped to that job's lifetime + 7 days. Socket.IO room per job. Off-platform contact info is stripped server-side.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Conversation · both sides <span class="actor-tag client">Client</span> <span class="actor-tag helper">Helper</span></div>
+
+  <div class="flow-row">
+    <!-- Client side -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>CLIENT · CONVERSATION</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:48</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: #fff; padding: 28px 12px 8px; border-bottom: 1px solid var(--qtm-border); display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 14px; color: var(--qtm-text-2);">‹</div>
+            <div class="avatar-mini helper">SK</div>
+            <div style="flex: 1;">
+              <div style="font-size: 12px; font-weight: 700;">Sarah K.</div>
+              <div style="font-size: 9px; color: var(--qtm-success);">● online · ETA 5 min</div>
+            </div>
+            <div style="font-size: 13px;">📞</div>
+          </div>
+          <div class="chat-stack-mini" style="padding: 10px 10px 50px;">
+            <div style="font-size: 8px; color: var(--qtm-text-3); text-align: center; margin: 4px 0;">Today · 9:46</div>
+            <div class="msg-mini in">Hey Michael, I'm 5 min out. Any parking tips?</div>
+            <div class="msg-mini out">Hi! Spot in front of the gate is free</div>
+            <div class="msg-mini out">Side gate is unlocked, just come round</div>
+            <div class="msg-mini in">Perfect, thanks 👍</div>
+            <div style="background: var(--qtm-warning-soft); border: 1px dashed var(--qtm-warning); border-radius: 8px; padding: 6px 8px; font-size: 9px; color: #92400E; margin: 4px 0;">⚠ Phone numbers can't be shared in chat</div>
+            <div class="msg-mini in" style="opacity: 0.5;">Want my mobile? It's [REDACTED]</div>
+          </div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--qtm-border); padding: 6px 10px; display: flex; gap: 6px; align-items: center;">
+            <div style="font-size: 14px;">+</div>
+            <input class="input-mini focused" style="flex: 1; padding: 5px 8px; font-size: 10px;" placeholder="Message..."/>
+            <div style="font-size: 14px;">😊</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Coordinate without exposing phone</div>
+        <span class="verb primary">Type · send</span>
+        <div class="note">PII stripped server-side</div>
+      </div>
+    </div>
+
+    <div class="arrow dashed"><div class="line"></div><div class="label">Socket: chat:message</div></div>
+
+    <!-- Helper side -->
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>HELPER · MIRROR</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:48</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: #fff; padding: 28px 12px 8px; border-bottom: 1px solid var(--qtm-border); display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 14px; color: var(--qtm-text-2);">‹</div>
+            <div class="avatar-mini">M</div>
+            <div style="flex: 1;">
+              <div style="font-size: 12px; font-weight: 700;">Michael</div>
+              <div style="font-size: 9px; color: var(--qtm-success);">● typing...</div>
+            </div>
+            <div style="font-size: 13px;">📞</div>
+          </div>
+          <div class="chat-stack-mini" style="padding: 10px 10px 50px;">
+            <div style="font-size: 8px; color: var(--qtm-text-3); text-align: center; margin: 4px 0;">Today · 9:46</div>
+            <div class="msg-mini out" style="background: linear-gradient(135deg, #10B981, #059669);">Hey Michael, I'm 5 min out. Any parking tips?</div>
+            <div class="msg-mini in">Hi! Spot in front of the gate is free</div>
+            <div class="msg-mini in">Side gate is unlocked, just come round</div>
+            <div class="msg-mini out" style="background: linear-gradient(135deg, #10B981, #059669);">Perfect, thanks 👍</div>
+            <div class="msg-mini in" style="font-size: 9px; opacity: 0.7; padding: 4px 8px;"><em>Michael tried to send a number</em></div>
+          </div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid var(--qtm-border); padding: 6px 10px; display: flex; gap: 6px;">
+            <input class="input-mini" style="flex: 1; padding: 5px 8px; font-size: 10px;" placeholder="Message..."/>
+            <div style="font-size: 13px;">📎</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Mirror</div>
+        <div class="title">Sees same convo · typing indicator</div>
+        <span class="verb system">Realtime · 200ms latency</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div><div class="label">Quick actions</div></div>
+
+    <!-- Quick actions / SOS -->
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>QUICK ACTIONS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:50</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: rgba(0,0,0,0.4); height: 50%;"></div>
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #fff; border-radius: 16px 16px 0 0; padding: 14px;">
+            <div style="width: 32px; height: 3px; background: var(--qtm-border); border-radius: 999px; margin: 0 auto 12px;"></div>
+            <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">Quick actions</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">📷 Photo</button>
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">📍 Location</button>
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">⏱ "On my way"</button>
+              <button class="btn-mini secondary" style="font-size: 10px; padding: 8px;">⌛ Running late</button>
+            </div>
+            <button class="btn-mini danger" style="margin-top: 10px; font-size: 11px;">🚨 Emergency · alert admin</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Action</div>
+        <div class="title">Canned messages · SOS</div>
+        <span class="verb danger">Panic → admin</span>
+        <div class="note">Within 60s response</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 48px;">Edge cases</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>📵 Off-platform contact</strong>Server regex strips phone numbers, emails, social handles. Sender sees their own message; receiver sees [REDACTED] + warning.</div>
+    <div class="postit" style="background:#FED7AA; color:#7C2D12; transform:rotate(1deg);"><strong>🔇 Muted thread</strong>After job + 7 days, chat archives. Read-only. Dispute reopens it.</div>
+    <div class="postit" style="background:#FECACA; color:#7F1D1D; transform:rotate(-1deg);"><strong>🚩 Reported message</strong>Long-press → Report. Sent to admin queue with full thread context.</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     6 · PAYMENTS / ESCROW / PAYOUT
+     ============================================================ -->
+<section class="flow-section" id="payments" data-screen-label="07 Payments">
+  <header class="section-head">
+    <span class="num">06</span>
+    <div>
+      <h2>Payments &amp; escrow</h2>
+      <p>Money moves four times: hold (post), capture (approve), platform fee split (15%), payout (helper bank). Stripe Connect Custom under the hood.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Money timeline · service blueprint slice</div>
+  <div class="blueprint" style="--bp-steps: 5;">
+    <div class="bp-row">
+      <div class="bp-label">Client sees</div>
+      <div class="bp-cells">
+        <div><strong>Post job</strong><br/>"$140 hold on card"</div>
+        <div>—</div>
+        <div>—</div>
+        <div><strong>Approve work</strong><br/>"Charged $140"</div>
+        <div><em>Receipt emailed</em></div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">Helper sees</div>
+      <div class="bp-cells">
+        <div>—</div>
+        <div>—</div>
+        <div><strong>Mark complete</strong><br/>"$119 pending"</div>
+        <div>"$119 ready · in 1–3 days"</div>
+        <div><strong>Payout</strong><br/>"$119 deposited"</div>
+      </div>
+    </div>
+    <div class="bp-row bp-line">— — — — — — — line of visibility — — — — — —</div>
+    <div class="bp-row">
+      <div class="bp-label">Stripe</div>
+      <div class="bp-cells">
+        <div><code>PaymentIntent.created · capture_method=manual</code></div>
+        <div>Auth held 7 days max</div>
+        <div>—</div>
+        <div><code>PI.capture()</code> · split: $21 platform / $119 helper</div>
+        <div><code>Transfer → connected acct · Payout schedule</code></div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">QTM Server</div>
+      <div class="bp-cells">
+        <div>job.escrow = held</div>
+        <div>—</div>
+        <div>job.status = completed</div>
+        <div>job.escrow = released</div>
+        <div>helper.lifetime_earnings += 119</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Helper earnings + payout screens -->
+  <div class="subsection-head" style="margin-top: 56px;">Helper earnings &amp; payout <span class="actor-tag helper">Helper</span></div>
+  <div class="flow-row">
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>EARN · DASHBOARD</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:41</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad">
+          <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 22px 14px 18px; color: #fff;">
+            <div style="font-size: 9px; opacity: 0.8;">This week</div>
+            <div style="font-size: 28px; font-weight: 800; margin-top: 2px;">$847.00</div>
+            <div style="display: flex; gap: 12px; font-size: 9px; margin-top: 8px;">
+              <span>📊 7 jobs</span><span>★ 4.92</span><span>↑ 18%</span>
+            </div>
+          </div>
+          <div style="padding: 10px 12px;">
+            <div style="background: var(--qtm-bg); border-radius: 10px; padding: 10px;">
+              <div style="display: flex; justify-content: space-between;">
+                <div>
+                  <div style="font-size: 9px; color: var(--qtm-text-3);">Available</div>
+                  <div style="font-size: 14px; font-weight: 700; color: var(--qtm-success);">$522.00</div>
+                </div>
+                <button class="btn-mini helper" style="width: auto; padding: 6px 14px; font-size: 10px;">Cash out</button>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--qtm-border); font-size: 10px;">
+                <span style="color: var(--qtm-text-2);">Pending</span><span style="color: var(--qtm-warning);">$325.00</span>
+              </div>
+            </div>
+            <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 12px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Recent</div>
+            <div class="card-mini">
+              <div class="row"><span style="font-size: 10px; font-weight: 600;">Cleaning · Brunswick</span><span class="price" style="color: var(--qtm-success);">+$119</span></div>
+              <div class="meta">Today 11:30 · ✓ Released</div>
+            </div>
+            <div class="card-mini">
+              <div class="row"><span style="font-size: 10px; font-weight: 600;">Outdoor · Coburg</span><span class="price" style="color: var(--qtm-warning);">$85 pending</span></div>
+              <div class="meta">Yesterday · ⏱ Holds 1h 14m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">See what's earned vs available</div>
+        <span class="verb helper">Cash out</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>CASH OUT</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:42</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 13px; font-weight: 700;">Cash out</div>
+          <div style="font-size: 9px; color: var(--qtm-text-2); margin-bottom: 12px;">Funds in your bank in 1–3 business days</div>
+          <label class="field-label-mini">Amount</label>
+          <div style="border: 1.5px solid var(--qtm-blue-600); border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 4px;">
+            <div style="font-size: 22px; font-weight: 800;">$522.00</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2);">All available</div>
+          </div>
+          <button class="btn-mini ghost" style="font-size: 10px;">Custom amount</button>
+
+          <label class="field-label-mini" style="margin-top: 12px;">To</label>
+          <div style="border: 1.5px solid var(--qtm-border); border-radius: 8px; padding: 8px 10px;">
+            <div style="font-size: 10px; font-weight: 700;">CommBank •••3392</div>
+            <div style="font-size: 9px; color: var(--qtm-text-3);">Default · verified</div>
+          </div>
+          <button class="btn-mini helper" style="margin-top: 12px;">Cash out · $522.00</button>
+          <div style="font-size: 9px; color: var(--qtm-text-3); margin-top: 8px; text-align: center;">No fee · standard payout</div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Move money to bank</div>
+        <span class="verb helper">Confirm cash out</span>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-success);"></span>PAID</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:42</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: linear-gradient(180deg, #059669, #10B981); height: 100%; padding: 32px 14px; color: #fff; text-align: center;">
+          <div style="font-size: 44px;">💸</div>
+          <div style="font-size: 18px; font-weight: 800; margin-top: 8px;">On its way</div>
+          <div style="font-size: 11px; opacity: 0.85; margin-top: 6px; line-height: 15px;">$522 to CommBank •••3392.<br/>Arrives by Mon, May 6.</div>
+          <div style="background: rgba(255,255,255,0.16); backdrop-filter: blur(10px); border-radius: 12px; padding: 10px; margin-top: 18px; font-size: 9px; text-align: left;">
+            <div style="opacity: 0.7;">Reference</div>
+            <div style="font-family: var(--qtm-font-mono); font-size: 10px; margin-top: 2px;">QTM-PO-2937401</div>
+          </div>
+          <button class="btn-mini" style="margin-top: 14px; background: #fff; color: var(--qtm-success);">Done</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Outcome</div>
+        <div class="title">Payout queued</div>
+        <span class="verb system">Stripe Transfer + Payout</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 48px;">Edge cases</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>💳 Auth expires (7 days)</strong>Stripe drops the hold. Job auto-cancels with apology email; client can repost.</div>
+    <div class="postit" style="background:#FED7AA;color:#7C2D12;transform:rotate(1deg);"><strong>↩ Refund mid-service</strong>Prorated by elapsed time. Helper paid for time worked; client refunded the rest.</div>
+    <div class="postit" style="background:#FECACA;color:#7F1D1D;transform:rotate(-1deg);"><strong>🚫 Bank verification fails</strong>Cash-out blocked until KYC re-verified. Funds stay in QTM ledger.</div>
+    <div class="postit" style="transform:rotate(-2deg);"><strong>⏱ Auto-release</strong>If client doesn't approve in 2h, escrow auto-releases. Email warning at 1h 30m.</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     7 · DISPUTES
+     ============================================================ -->
+<section class="flow-section" id="disputes" data-screen-label="08 Disputes">
+  <header class="section-head">
+    <span class="num">07</span>
+    <div>
+      <h2>Disputes &amp; resolution</h2>
+      <p>Either party can dispute within 48 hours of completion. Escrow freezes. Admin mediates with photos, chat history, and GPS evidence.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Client raises a dispute <span class="actor-tag client">Client</span></div>
+  <div class="flow-row">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 01 · TRIGGER</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>11:32</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 13px; font-weight: 700;">Something wrong?</div>
+          <div style="font-size: 9px; color: var(--qtm-text-2); margin-bottom: 12px; line-height: 13px;">Help us understand. Escrow stays held until this is resolved.</div>
+          <label class="field-label-mini">What happened</label>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="border: 1.5px solid var(--qtm-blue-600); background: var(--qtm-blue-50); border-radius: 8px; padding: 8px 10px; font-size: 10px; font-weight: 600;">⚠ Quality not as expected</div>
+            <div style="border: 1.5px solid var(--qtm-border); border-radius: 8px; padding: 8px 10px; font-size: 10px;">⏱ Job not completed</div>
+            <div style="border: 1.5px solid var(--qtm-border); border-radius: 8px; padding: 8px 10px; font-size: 10px;">💔 Damage to property</div>
+            <div style="border: 1.5px solid var(--qtm-border); border-radius: 8px; padding: 8px 10px; font-size: 10px;">🚨 Safety concern</div>
+          </div>
+          <label class="field-label-mini" style="margin-top: 8px;">Describe (required)</label>
+          <textarea class="input-mini focused" rows="2" style="resize: none; font-family: inherit;">Bath 2 was skipped — see photo</textarea>
+          <button class="btn-mini danger" style="margin-top: 10px;">Submit · pause payment</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Flag the issue · pause $</div>
+        <span class="verb danger">Submit dispute</span>
+      </div>
+    </div>
+
+    <div class="arrow error"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot" style="background: var(--qtm-danger);"></span>STEP 02 · EVIDENCE</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>11:33</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px;">
+          <div style="font-size: 12px; font-weight: 700;">Add evidence</div>
+          <div style="font-size: 9px; color: var(--qtm-text-2); margin-bottom: 10px;">Photos help admin decide quickly</div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #FED7AA, #FB923C); border-radius: 6px; position: relative;"><div style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: var(--qtm-danger); color: #fff; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center;">×</div></div>
+            <div style="aspect-ratio: 1; background: linear-gradient(135deg, #FECACA, #F87171); border-radius: 6px; position: relative;"><div style="position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: var(--qtm-danger); color: #fff; border-radius: 50%; font-size: 9px; display: flex; align-items: center; justify-content: center;">×</div></div>
+            <div style="aspect-ratio: 1; background: var(--qtm-bg); border: 1.5px dashed var(--qtm-border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--qtm-text-3);">+</div>
+          </div>
+          <div style="background: var(--qtm-bg); border-radius: 8px; padding: 8px; margin-top: 10px; font-size: 10px;">
+            <div style="font-weight: 600; margin-bottom: 4px;">Auto-attached</div>
+            <div style="color: var(--qtm-text-2); line-height: 14px;">✓ 8 helper photos<br/>✓ Full chat thread<br/>✓ GPS log (1h 23m on-site)</div>
+          </div>
+          <button class="btn-mini danger" style="margin-top: 10px;">Send to admin</button>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">User goal</div>
+        <div class="title">Attach evidence · escalate</div>
+        <span class="verb danger">Send to admin</span>
+        <div class="note">System auto-attaches GPS + chat</div>
+      </div>
+    </div>
+
+    <div class="arrow dashed"><div class="line"></div><div class="label">Goes to admin</div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 03 · WAIT</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>11:34</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="padding: 28px 14px; background: var(--qtm-bg);">
+          <div style="background: #fff; border-radius: 12px; padding: 14px; text-align: center;">
+            <div style="font-size: 28px;">⏱</div>
+            <div style="font-size: 12px; font-weight: 700; margin-top: 6px;">Under review</div>
+            <div style="font-size: 9px; color: var(--qtm-text-2); margin-top: 4px; line-height: 13px;">Admin typically responds within 4 hours.<br/>$140 stays held until resolved.</div>
+            <div style="border-top: 1px dashed var(--qtm-border); margin: 10px 0; padding-top: 8px; text-align: left;">
+              <div style="font-size: 9px; color: var(--qtm-text-3);">Case ID</div>
+              <div style="font-family: var(--qtm-font-mono); font-size: 10px; margin-top: 2px;">QTM-DSP-2904</div>
+            </div>
+          </div>
+          <div style="background: var(--qtm-warning-soft); border: 1px solid var(--qtm-warning); border-radius: 10px; padding: 8px 10px; margin-top: 10px; font-size: 9px; color: #92400E; line-height: 13px;">
+            ⚠ Sarah has been notified. She can submit her side of the story.
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">State</div>
+        <div class="title">Awaiting admin decision</div>
+        <span class="verb system">Both notified · escrow frozen</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resolution outcomes -->
+  <div class="subsection-head" style="margin-top: 48px;">Possible outcomes</div>
+  <div class="flow-row wrap" style="gap: 16px;">
+    <div class="tree-node outcome good" style="min-width: 220px;">
+      <div class="node-title">✓ Resolved · partial refund</div>
+      <div class="node-meta">Most common. $30 back to client; helper still gets $89. Both notified.</div>
+    </div>
+    <div class="tree-node outcome good" style="min-width: 220px;">
+      <div class="node-title">✓ Resolved · re-do</div>
+      <div class="node-meta">Helper agrees to return. Escrow stays held until 2nd visit approved.</div>
+    </div>
+    <div class="tree-node outcome bad" style="min-width: 220px;">
+      <div class="node-title">↩ Full refund to client</div>
+      <div class="node-meta">Helper paid nothing. Helper rating −0.4. Strike count +1 (3 strikes = suspension).</div>
+    </div>
+    <div class="tree-node outcome bad" style="min-width: 220px;">
+      <div class="node-title">✕ Dispute denied</div>
+      <div class="node-meta">Evidence weak / out of policy. Escrow released to helper. Client can appeal once.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     8 · ADMIN OPS (verification, dispute resolution, mgmt)
+     ============================================================ -->
+<section class="flow-section" id="admin" data-screen-label="09 Admin ops">
+  <header class="section-head">
+    <span class="num">08</span>
+    <div>
+      <h2>Admin operations</h2>
+      <p>Three core jobs in the back office: review pending helpers, resolve disputes, manage users &amp; jobs. Atlassian-style flat utility — dense tables, fast keyboard nav, no decoration.</p>
+    </div>
+  </header>
+
+  <!-- Verification queue -->
+  <div class="subsection-head"><span class="actor-tag admin">Admin</span> Helper verification queue</div>
+  <div class="flow-row" style="margin-bottom: 56px;">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 01 · QUEUE</div>
+      <div class="web-frame">
+        <div class="topbar"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>QTM Admin · Verification</div>
+        <div class="sidebar">
+          <div class="nav-item">📊 Dash</div>
+          <div class="nav-item active">✓ Verify</div>
+          <div class="nav-item">⚖ Disputes</div>
+          <div class="nav-item">👥 Users</div>
+          <div class="nav-item">📋 Jobs</div>
+        </div>
+        <div class="main">
+          <div class="page-title">Pending helpers · 23</div>
+          <table class="tbl-mini">
+            <thead><tr><th>Name</th><th>Submitted</th><th>ID</th><th>AFP</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Sarah Kowalski</strong><div class="mono" style="font-size: 7px;">u_2937</div></td><td>2h ago</td><td><span class="badge-mini ok">✓</span></td><td><span class="badge-mini ok">Clear</span></td><td><span class="badge-mini warn">Review</span></td></tr>
+              <tr><td><strong>James Tully</strong><div class="mono" style="font-size: 7px;">u_2938</div></td><td>3h ago</td><td><span class="badge-mini ok">✓</span></td><td><span class="badge-mini warn">Wait</span></td><td><span class="badge-mini warn">Review</span></td></tr>
+              <tr><td><strong>M. Reza</strong><div class="mono" style="font-size: 7px;">u_2941</div></td><td>5h ago</td><td><span class="badge-mini no">Blur</span></td><td>—</td><td><span class="badge-mini no">Block</span></td></tr>
+              <tr><td><strong>Aisha Patel</strong><div class="mono" style="font-size: 7px;">u_2942</div></td><td>6h ago</td><td><span class="badge-mini ok">✓</span></td><td><span class="badge-mini ok">Clear</span></td><td><span class="badge-mini info">Auto</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="annot" style="width: 380px;">
+        <div class="goal">Goal</div>
+        <div class="title">Triage pending helpers · spot blocks</div>
+        <span class="verb">Click row · open detail</span>
+        <div class="note">SLA: 24h to first-touch each row</div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="line"></div></div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>STEP 02 · DETAIL</div>
+      <div class="web-frame">
+        <div class="topbar"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>Sarah Kowalski · u_2937</div>
+        <div class="sidebar">
+          <div class="nav-item">📊 Dash</div>
+          <div class="nav-item active">✓ Verify</div>
+          <div class="nav-item">⚖ Disputes</div>
+          <div class="nav-item">👥 Users</div>
+          <div class="nav-item">📋 Jobs</div>
+        </div>
+        <div class="main" style="overflow-y: auto;">
+          <div class="page-title">Sarah Kowalski</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 9px; margin-bottom: 8px;">
+            <div><div style="color: var(--admin-text-3); font-size: 8px;">DOB</div><div>14 Mar 1991</div></div>
+            <div><div style="color: var(--admin-text-3); font-size: 8px;">Suburb</div><div>Brunswick + 10km</div></div>
+          </div>
+          <div style="font-size: 9px; color: var(--admin-text-3); margin-bottom: 4px; font-weight: 600;">CHECKS</div>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="display:flex; justify-content: space-between; padding: 4px 6px; background: var(--admin-success-soft); border-radius: 3px; font-size: 9px;"><span>📷 Photo ID (Stripe)</span><span class="badge-mini ok">PASS</span></div>
+            <div style="display:flex; justify-content: space-between; padding: 4px 6px; background: var(--admin-success-soft); border-radius: 3px; font-size: 9px;"><span>👮 AFP police check</span><span class="badge-mini ok">CLEAR</span></div>
+            <div style="display:flex; justify-content: space-between; padding: 4px 6px; background: var(--admin-warning-soft); border-radius: 3px; font-size: 9px;"><span>🏠 Address proof</span><span class="badge-mini warn">Outdated</span></div>
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 10px;">
+            <button style="flex: 1; padding: 6px; font-size: 10px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Request more</button>
+            <button style="flex: 1; padding: 6px; font-size: 10px; border: none; background: var(--admin-danger); color: #fff; border-radius: 4px;">Reject</button>
+            <button style="flex: 2; padding: 6px; font-size: 10px; border: none; background: var(--admin-success); color: #fff; border-radius: 4px; font-weight: 600;">Approve</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot" style="width: 380px;">
+        <div class="goal">Goal</div>
+        <div class="title">Decide approve / reject / request</div>
+        <span class="verb system">3 keyboard shortcuts: A · R · M</span>
+        <div class="note">Decision triggers SMS + push to helper</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dispute resolution -->
+  <div class="subsection-head"><span class="actor-tag admin">Admin</span> Dispute case detail</div>
+  <div class="flow-row">
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>DISPUTE · CASE</div>
+      <div class="web-frame" style="width: 480px; height: 320px;">
+        <div class="topbar"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>QTM-DSP-2904 · Cleaning · Brunswick</div>
+        <div class="sidebar">
+          <div class="nav-item">📊 Dash</div>
+          <div class="nav-item">✓ Verify</div>
+          <div class="nav-item active">⚖ Disputes</div>
+          <div class="nav-item">👥 Users</div>
+          <div class="nav-item">📋 Jobs</div>
+        </div>
+        <div class="main" style="overflow: hidden;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div class="page-title" style="margin: 0;">Quality dispute</div>
+            <span class="badge-mini warn">⚠ Open · 4h</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 9px; margin-bottom: 8px;">
+            <div style="background: var(--admin-primary-soft); padding: 6px; border-radius: 4px;"><div style="font-weight: 600;">Client · Michael</div><div>"Bath 2 was skipped"</div></div>
+            <div style="background: var(--admin-success-soft); padding: 6px; border-radius: 4px;"><div style="font-weight: 600;">Helper · Sarah</div><div>"Bath 2 not in checklist?"</div></div>
+          </div>
+          <div style="font-size: 8px; color: var(--admin-text-3); margin-bottom: 3px; font-weight: 600;">EVIDENCE</div>
+          <div style="display: flex; gap: 3px; margin-bottom: 8px;">
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #FED7AA, #FB923C); border-radius: 3px;"></div>
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #FECACA, #F87171); border-radius: 3px;"></div>
+            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #DBEAFE, #93C5FD); border-radius: 3px;"></div>
+            <div style="width: 32px; height: 32px; background: var(--admin-bg); border: 1px dashed var(--admin-border); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 9px;">+5</div>
+            <div style="width: 32px; height: 32px; background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 3px; font-size: 8px; display: flex; align-items: center; justify-content: center;">📍GPS</div>
+            <div style="width: 32px; height: 32px; background: var(--admin-bg); border: 1px solid var(--admin-border); border-radius: 3px; font-size: 8px; display: flex; align-items: center; justify-content: center;">💬14</div>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Refund full</button>
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Refund $30</button>
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: none; background: var(--admin-primary); color: #fff; border-radius: 4px; font-weight: 600;">Schedule re-do</button>
+            <button style="flex: 1; padding: 6px; font-size: 9px; border: 1px solid var(--admin-border); background: #fff; border-radius: 4px;">Deny</button>
+          </div>
+        </div>
+      </div>
+      <div class="annot" style="width: 480px;">
+        <div class="goal">Goal</div>
+        <div class="title">Decide refund · re-do · deny</div>
+        <span class="verb system">One-click resolution</span>
+        <div class="note">Decision triggers escrow action + notifies both parties</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- User mgmt + monitoring -->
+  <div class="subsection-head" style="margin-top: 48px;">User &amp; job management · monitoring</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>👥 User mgmt</strong>Search by phone / name / id. Suspend, unsuspend, refund any past job, force-verify, merge accounts.</div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);"><strong>📋 Job ops</strong>Re-assign stuck jobs. Force-cancel zombies. Re-issue refund. View full state log.</div>
+    <div class="postit" style="background: #BFDBFE; color: #1E3A8A; transform: rotate(-1deg);"><strong>📊 Live monitor</strong>Real-time map: pending jobs, helpers online, disputes opened today, GMV running total.</div>
+    <div class="postit" style="transform: rotate(-2deg);"><strong>🚨 Safety queue</strong>Panic SOS routes here first. On-call admin + Slack alert + helper hotline within 60s.</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     9 · NOTIFICATIONS (multi-channel matrix)
+     ============================================================ -->
+<section class="flow-section" id="notifications" data-screen-label="10 Notifications">
+  <header class="section-head">
+    <span class="num">09</span>
+    <div>
+      <h2>Notifications</h2>
+      <p>Every event picks 1–3 channels based on urgency. Push for in-app moments, SMS for must-not-miss, email for paperwork.</p>
+    </div>
+  </header>
+
+  <div class="subsection-head">Channel matrix</div>
+  <div class="blueprint" style="--bp-steps: 4;">
+    <div class="bp-row">
+      <div class="bp-label">Event</div>
+      <div class="bp-cells">
+        <div style="font-weight: 700; background: #fafbfc;">Push</div>
+        <div style="font-weight: 700; background: #fafbfc;">SMS</div>
+        <div style="font-weight: 700; background: #fafbfc;">Email</div>
+        <div style="font-weight: 700; background: #fafbfc;">In-app</div>
+      </div>
+    </div>
+    <div class="bp-row"><div class="bp-label">OTP</div><div class="bp-cells"><div>—</div><div>✓ primary</div><div>—</div><div>—</div></div></div>
+    <div class="bp-row"><div class="bp-label">Job match · helpers nearby</div><div class="bp-cells"><div>✓</div><div>—</div><div>—</div><div>✓ banner</div></div></div>
+    <div class="bp-row"><div class="bp-label">Helper arrived</div><div class="bp-cells"><div>✓</div><div>✓ if push off</div><div>—</div><div>✓</div></div></div>
+    <div class="bp-row"><div class="bp-label">Job complete · approve</div><div class="bp-cells"><div>✓</div><div>✓ at 1h 30m</div><div>✓ receipt</div><div>✓</div></div></div>
+    <div class="bp-row"><div class="bp-label">Payout sent</div><div class="bp-cells"><div>✓</div><div>—</div><div>✓ statement</div><div>✓</div></div></div>
+    <div class="bp-row"><div class="bp-label">Dispute opened (counterparty)</div><div class="bp-cells"><div>✓</div><div>✓</div><div>✓ summary</div><div>✓</div></div></div>
+    <div class="bp-row"><div class="bp-label">Verification result</div><div class="bp-cells"><div>✓</div><div>✓ if approved</div><div>✓ if rejected</div><div>✓</div></div></div>
+    <div class="bp-row"><div class="bp-label">Marketing · weekly</div><div class="bp-cells"><div>—</div><div>—</div><div>✓ opt-in</div><div>—</div></div></div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 48px;">Notification examples</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>PUSH · LOCK SCREEN</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status dark"><span>9:53</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); height: 100%; padding: 60px 16px 16px;">
+          <div style="text-align: center; color: rgba(255,255,255,0.7); font-size: 11px;">Tuesday · May 3</div>
+          <div style="text-align: center; color: #fff; font-size: 48px; font-weight: 200; margin-top: 4px;">9:53</div>
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: 14px; padding: 10px 12px; margin-top: 36px; color: #fff;">
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <div style="width: 16px; height: 16px; border-radius: 4px; background: var(--qtm-navy); display: flex; align-items: center; justify-content: center; font-size: 9px;">Q</div>
+              <div style="font-size: 9px; color: rgba(255,255,255,0.7); flex: 1;">QTM</div>
+              <div style="font-size: 8px; color: rgba(255,255,255,0.5);">now</div>
+            </div>
+            <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Sarah's at the door 👋</div>
+            <div style="font-size: 10px; opacity: 0.85;">Tap to open the chat or unlock</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Channel</div>
+        <div class="title">Push · arrived event</div>
+        <span class="verb system">helper.arrived</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>SMS</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>9:42</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-bg);">
+          <div style="background: #fff; padding: 28px 12px 8px; border-bottom: 1px solid var(--qtm-border); display: flex; gap: 8px; align-items: center;">
+            <div style="font-size: 14px; color: var(--qtm-text-2);">‹</div>
+            <div class="avatar-mini" style="background: var(--qtm-navy);">QT</div>
+            <div><div style="font-size: 11px; font-weight: 700;">QTM</div><div style="font-size: 9px; color: var(--qtm-text-2);">SMS · short code</div></div>
+          </div>
+          <div style="padding: 10px;">
+            <div style="font-size: 8px; color: var(--qtm-text-3); text-align: center; margin-bottom: 6px;">Today · 9:42</div>
+            <div style="background: #E5E7EB; padding: 8px 10px; border-radius: 12px; font-size: 11px; line-height: 15px; max-width: 80%;">QTM: Your code is <strong>428119</strong>. Don't share it. Expires in 10 min.</div>
+            <div style="background: #E5E7EB; padding: 8px 10px; border-radius: 12px; font-size: 11px; line-height: 15px; max-width: 80%; margin-top: 8px;">QTM: Sarah accepted your job. Track her live in the app: qtm.app/j/2937</div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Channel</div>
+        <div class="title">SMS · OTP + job confirmed</div>
+        <span class="verb system">Twilio · short code</span>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-meta"><span class="dot"></span>EMAIL · RECEIPT</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="status"><span>11:30</span><span>5G ▮▮▮</span></div>
+        <div class="body no-pad" style="background: var(--qtm-bg); padding: 28px 10px;">
+          <div style="background: #fff; border-radius: 8px; padding: 12px;">
+            <div style="font-size: 9px; color: var(--qtm-text-3);">From QTM &lt;hello@qtm.app&gt;</div>
+            <div style="font-size: 11px; font-weight: 700; margin-top: 4px;">Receipt for your cleaning job</div>
+            <div style="border-top: 1px solid var(--qtm-border); margin-top: 8px; padding-top: 8px;">
+              <div style="text-align: center; padding: 8px;">
+                <div style="font-size: 9px; color: var(--qtm-text-2);">Total charged</div>
+                <div style="font-size: 22px; font-weight: 800; margin-top: 2px;">$140.00</div>
+              </div>
+              <div style="font-size: 9px; line-height: 14px;">
+                <div style="display: flex; justify-content: space-between;"><span>3-bed end-of-lease clean</span><span>$130.00</span></div>
+                <div style="display: flex; justify-content: space-between;"><span>Priority match</span><span>$10.00</span></div>
+                <div style="border-top: 1px dashed var(--qtm-border); padding-top: 4px; margin-top: 4px; display: flex; justify-content: space-between;"><span style="color: var(--qtm-text-2);">Paid · Visa •••4242</span><span style="color: var(--qtm-text-2);">3 May 11:30</span></div>
+              </div>
+              <button class="btn-mini secondary" style="margin-top: 8px; font-size: 10px;">View / download PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annot">
+        <div class="goal">Channel</div>
+        <div class="title">Email · paperwork &amp; receipts</div>
+        <span class="verb system">SendGrid template · job.completed</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     10 · JOB STATE MACHINE
+     ============================================================ -->
+<section class="flow-section" id="state" data-screen-label="11 State machine">
+  <header class="section-head">
+    <span class="num">10</span>
+    <div>
+      <h2>Job state machine</h2>
+      <p>Eleven states. Edges are events (user action or system tick). Terminal states in green; error/exit states in red/orange.</p>
+    </div>
+  </header>
+
+  <div class="state-canvas" style="height: 720px;">
+    <svg viewBox="0 0 1280 720" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+        </marker>
+        <marker id="ar-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#EF4444"/>
+        </marker>
+        <marker id="ar-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#10B981"/>
+        </marker>
+      </defs>
+      <!-- Happy path -->
+      <path d="M 130 110 L 250 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 360 110 L 480 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 590 110 L 710 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 820 110 L 940 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 1050 110 L 1170 110" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <!-- second row -->
+      <path d="M 1220 150 Q 1240 280 1170 290 L 1050 290" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 940 290 L 820 290" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 710 290 L 590 290" stroke="#10B981" stroke-width="2" fill="none" marker-end="url(#ar-g)"/>
+      <!-- Branches off / error edges -->
+      <path d="M 480 150 L 480 280 L 360 280" stroke="#EF4444" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 590 150 L 590 250 L 250 250 L 250 160" stroke="#EF4444" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 820 150 L 820 240 L 480 240 L 480 170" stroke="#F97316" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 1050 150 L 1050 220 L 880 220 L 820 290" stroke="#F97316" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <!-- Dispute branch -->
+      <path d="M 480 330 L 480 440" stroke="#F97316" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#ar-r)"/>
+      <path d="M 590 470 L 710 470" stroke="#94A3B8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+      <path d="M 820 510 L 820 580 L 700 580" stroke="#10B981" stroke-width="2" fill="none" marker-end="url(#ar-g)"/>
+      <path d="M 820 510 L 820 580 L 940 580" stroke="#EF4444" stroke-width="2" fill="none" marker-end="url(#ar-r)"/>
+
+      <!-- edge labels -->
+      <text x="190" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">post()</text>
+      <text x="410" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">match</text>
+      <text x="640" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">accept</text>
+      <text x="870" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">arrive</text>
+      <text x="1080" y="100" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">start</text>
+      <text x="990" y="280" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">complete</text>
+      <text x="640" y="280" font-size="10" fill="#10B981" font-family="ui-monospace, monospace">approve()</text>
+      <text x="490" y="200" font-size="10" fill="#EF4444" font-family="ui-monospace, monospace">cancel · timeout</text>
+      <text x="495" y="450" font-size="10" fill="#F97316" font-family="ui-monospace, monospace">dispute()</text>
+      <text x="630" y="460" font-size="10" fill="#64748B" font-family="ui-monospace, monospace">admin review</text>
+    </svg>
+
+    <!-- Nodes -->
+    <div class="state-node start"        style="left: 20px;   top: 90px;"><span class="label">draft</span><span class="name">Draft</span></div>
+    <div class="state-node active"       style="left: 250px;  top: 90px;"><span class="label">open</span><span class="name">Open</span></div>
+    <div class="state-node active"       style="left: 480px;  top: 90px;"><span class="label">matching</span><span class="name">Matching</span></div>
+    <div class="state-node active"       style="left: 710px;  top: 90px;"><span class="label">assigned</span><span class="name">Assigned</span></div>
+    <div class="state-node in-progress"  style="left: 940px;  top: 90px;"><span class="label">en_route</span><span class="name">En route</span></div>
+    <div class="state-node in-progress"  style="left: 1170px; top: 90px;"><span class="label">arrived</span><span class="name">Arrived</span></div>
+    <div class="state-node in-progress"  style="left: 940px;  top: 270px;"><span class="label">in_progress</span><span class="name">In progress</span></div>
+    <div class="state-node terminal"     style="left: 710px;  top: 270px;"><span class="label">completed</span><span class="name">Completed</span></div>
+    <div class="state-node terminal"     style="left: 480px;  top: 270px;"><span class="label">approved · paid</span><span class="name">Approved ✓</span></div>
+    <div class="state-node error"        style="left: 250px;  top: 270px;"><span class="label">cancelled</span><span class="name">Cancelled</span></div>
+    <div class="state-node dispute"      style="left: 480px;  top: 440px;"><span class="label">disputed</span><span class="name">Disputed</span></div>
+    <div class="state-node dispute"      style="left: 710px;  top: 440px;"><span class="label">admin_review</span><span class="name">Admin review</span></div>
+    <div class="state-node terminal"     style="left: 530px;  top: 580px;"><span class="label">resolved · paid</span><span class="name">Resolved ✓</span></div>
+    <div class="state-node error"        style="left: 940px;  top: 580px;"><span class="label">refunded</span><span class="name">Refunded</span></div>
+  </div>
+
+  <div class="subsection-head" style="margin-top: 32px;">Auto-transitions (system ticks)</div>
+  <div class="flow-row wrap" style="gap: 24px;">
+    <div class="postit"><strong>⏱ open → cancelled</strong>No quotes after 60 min · Stripe auth would expire</div>
+    <div class="postit" style="background: #FED7AA; color: #7C2D12; transform: rotate(1deg);"><strong>⏱ assigned → cancelled</strong>Helper not within 1km of address by ETA + 15 min</div>
+    <div class="postit" style="background: #BFDBFE; color: #1E3A8A; transform: rotate(-1deg);"><strong>⏱ completed → approved</strong>Auto-release escrow after 2h of no client action</div>
+    <div class="postit" style="transform: rotate(-2deg);"><strong>⏱ disputed → admin_review</strong>Both parties had 24h to settle directly first</div>
+  </div>
+</section>
+
+<!-- ============================================================
+     11 · USER JOURNEY MAP (Client end-to-end with emotion)
+     ============================================================ -->
+<section class="flow-section" id="journey" data-screen-label="12 Journey map">
+  <header class="section-head">
+    <span class="num">11</span>
+    <div>
+      <h2>User journey map</h2>
+      <p>Client perspective from "kitchen looks rough" through "review submitted" — the emotional shape of the experience, where it spikes and where it dips.</p>
+    </div>
+  </header>
+
+  <div class="journey">
+    <div class="journey-grid" style="--journey-steps: 7;">
+      <div class="row-label">Stage</div>
+      <div class="stage-name">Awareness</div>
+      <div class="stage-name">Decide</div>
+      <div class="stage-name">Post</div>
+      <div class="stage-name">Match</div>
+      <div class="stage-name">Track</div>
+      <div class="stage-name">Approve</div>
+      <div class="stage-name">Reflect</div>
+
+      <div class="row-label">Action</div>
+      <div class="step-text action">Sees QTM ad on Insta</div>
+      <div class="step-text action">Downloads · OTP · profile</div>
+      <div class="step-text action">Picks cleaning · 3-bed · ASAP</div>
+      <div class="step-text action">Reviews 3 quotes · picks Sarah</div>
+      <div class="step-text action">Watches helper move on map</div>
+      <div class="step-text action">Approves photos · pays</div>
+      <div class="step-text action">Leaves 5★ review</div>
+
+      <div class="row-label">Thinking</div>
+      <div class="step-text thought">"Could I trust this?"</div>
+      <div class="step-text thought">"Will this take ages to set up?"</div>
+      <div class="step-text thought">"Am I being charged fairly?"</div>
+      <div class="step-text thought">"Which one's actually good?"</div>
+      <div class="step-text thought">"Are they really coming?"</div>
+      <div class="step-text thought">"Did they do everything?"</div>
+      <div class="step-text thought">"Would I book again?"</div>
+
+      <div class="row-label">System</div>
+      <div class="step-text system">— marketing —</div>
+      <div class="step-text system">otp.send · user.create</div>
+      <div class="step-text system">stripe.PI(hold $140)</div>
+      <div class="step-text system">socket: job:available × 12</div>
+      <div class="step-text system">location:update / 10s</div>
+      <div class="step-text system">stripe.PI.capture · split</div>
+      <div class="step-text system">review.create · helper.rating++</div>
+
+      <div class="row-label">Feeling</div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">🤔</span><div class="level" style="--lvl: 35%;"></div></div></div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">😐</span><div class="level" style="--lvl: 45%;"></div></div></div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">🙂</span><div class="level" style="--lvl: 65%;"></div></div></div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">😀</span><div class="level" style="--lvl: 80%;"></div></div></div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">😬</span><div class="level" style="--lvl: 50%;"></div></div></div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">😄</span><div class="level" style="--lvl: 90%;"></div></div></div>
+      <div class="step-text"><div class="emotion-bar"><span class="emoji">🥰</span><div class="level" style="--lvl: 95%;"></div></div></div>
+
+      <div class="row-label">Opportunity</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">Social proof on landing</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">⚠ Drop-off risk · keep onboarding under 90s</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">Show price upfront · no surprises</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">Highlight reputation, not just price</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">⚠ Anxiety dip · push status updates</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">Photo grid + 1-tap approve = trust</div>
+      <div class="step-text" style="font-size: 11px; color: var(--qtm-text-2);">Ask for review at peak — "Book Sarah again"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     12 · SERVICE BLUEPRINT (full)
+     ============================================================ -->
+<section class="flow-section" id="blueprint" data-screen-label="13 Service blueprint">
+  <header class="section-head">
+    <span class="num">12</span>
+    <div>
+      <h2>Service blueprint</h2>
+      <p>One job, all four layers. Front-stage is what each user sees; back-stage is what staff or helpers do offscreen; supporting systems are the plumbing.</p>
+    </div>
+  </header>
+
+  <div class="blueprint" style="--bp-steps: 6;">
+    <div class="bp-row">
+      <div class="bp-label">Phase</div>
+      <div class="bp-cells">
+        <div style="font-weight: 700; background: #fafbfc;">Discover</div>
+        <div style="font-weight: 700; background: #fafbfc;">Post</div>
+        <div style="font-weight: 700; background: #fafbfc;">Match</div>
+        <div style="font-weight: 700; background: #fafbfc;">Service</div>
+        <div style="font-weight: 700; background: #fafbfc;">Pay</div>
+        <div style="font-weight: 700; background: #fafbfc;">Review</div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">Client front-stage</div>
+      <div class="bp-cells">
+        <div>Browse home tiles · pick category</div>
+        <div>4-screen wizard · escrow hold</div>
+        <div>Watch quotes arrive · pick helper</div>
+        <div>Live map · in-progress card · chat</div>
+        <div>Approve photos · receipt</div>
+        <div>5-star review · book again CTA</div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">Helper front-stage</div>
+      <div class="bp-cells">
+        <div>—</div>
+        <div>—</div>
+        <div>Job ping · review &amp; quote</div>
+        <div>En route · arrive · checklist · photos</div>
+        <div>"Earnings pending" · cash-out</div>
+        <div>Get rated · streak rewards</div>
+      </div>
+    </div>
+    <div class="bp-row bp-line">— — — — — — — line of visibility — — — — — —</div>
+    <div class="bp-row">
+      <div class="bp-label">Back-stage staff</div>
+      <div class="bp-cells">
+        <div>—</div>
+        <div>—</div>
+        <div>Admin watches stuck jobs</div>
+        <div>SOS hotline standing by · safety queue monitored</div>
+        <div>Failed-payout queue handled</div>
+        <div>Review moderation · reports triaged</div>
+      </div>
+    </div>
+    <div class="bp-row">
+      <div class="bp-label">Supporting systems</div>
+      <div class="bp-cells">
+        <div>Marketing site · App Store</div>
+        <div>Twilio SMS · Stripe Identity (helpers only)</div>
+        <div>Geo radius · Socket.IO fan-out · push providers</div>
+        <div>Live GPS · MongoDB jobs · S3 photos</div>
+        <div>Stripe Connect · ledger</div>
+        <div>Reviews collection · NPS pipeline</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="margin-top: 96px; padding: 32px; text-align: center; border-top: 1px dashed var(--qtm-border); color: var(--qtm-text-3); font-size: 12px;">
+    QuickTaskMate · Screen flows &amp; UX diagrams · v1 · May 2026
+  </div>
+</section>
+
+</div>
+
+</main>
+
+
+</body>
+</html>

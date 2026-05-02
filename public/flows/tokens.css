@@ -1,0 +1,56 @@
+/* QuickTaskMate — CSS variables used by flows.css (standalone; ships with flows/) */
+:root {
+  --qtm-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --qtm-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --qtm-text: #0f172a;
+  --qtm-text-2: #475569;
+  --qtm-text-3: #64748b;
+  --qtm-bg-2: #f1f5f9;
+
+  --qtm-border: #e2e8f0;
+  --qtm-navy: #0f172a;
+
+  --qtm-blue-50: #eff6ff;
+  --qtm-blue-500: #3b82f6;
+  --qtm-blue-600: #2563eb;
+  --qtm-blue-700: #1d4ed8;
+
+  --qtm-gradient-primary: linear-gradient(135deg, #2563eb, #0891b2);
+  --qtm-gradient-night: linear-gradient(135deg, #0f172a, #1e3a8a);
+
+  --qtm-success: #059669;
+  --qtm-success-soft: #d1fae5;
+  --qtm-warning: #d97706;
+  --qtm-warning-soft: #fef3c7;
+  --qtm-danger: #dc2626;
+  --qtm-danger-soft: #fee2e2;
+  --qtm-orange: #ea580c;
+  --qtm-orange-2: #c2410c;
+
+  --qtm-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --qtm-shadow-md: 0 10px 25px -8px rgba(15, 23, 42, 0.12);
+
+  --qtm-svc-cleaning: #1d4ed8;
+  --qtm-svc-outdoor: #047857;
+  --qtm-svc-pet: #7c3aed;
+  --qtm-svc-handyman: #c2410c;
+  --qtm-svc-moving: #0d9488;
+  --qtm-svc-delivery: #be185d;
+
+  --admin-primary: #0052cc;
+  --admin-primary-soft: #deebff;
+  --admin-border: #dfe1e6;
+  --admin-surface: #ffffff;
+  --admin-text: #172b4d;
+  --admin-text-2: #42526e;
+  --admin-text-3: #5e6c84;
+
+  --admin-warning: #ff8b00;
+  --admin-warning-soft: #fffae6;
+  --admin-success: #006644;
+  --admin-success-soft: #e3fcef;
+  --admin-danger: #bf2600;
+  --admin-danger-soft: #ffebe6;
+}
